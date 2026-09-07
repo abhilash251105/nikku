@@ -3,30 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>A letter for Nikku</title>
+  <title>For You, Nikita</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
   <style>
-    /* ═══════════════════════════════════════════
-       ROOT & RESET
-       ═══════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════
+       ROOT TOKENS
+       ═══════════════════════════════════════════════════════ */
     :root {
       --bg-deep: #06050a;
       --bg-mid: #0a0812;
+      --bg-warm: #0d0a0e;
       --text-primary: #f5f0e8;
       --text-secondary: rgba(245, 240, 232, 0.6);
       --text-dim: rgba(245, 240, 232, 0.35);
       --gold: #c9a96e;
       --gold-soft: rgba(201, 169, 110, 0.6);
+      --gold-glow: rgba(201, 169, 110, 0.08);
       --rose: #e8b4b8;
       --rose-soft: rgba(232, 180, 184, 0.5);
+      --burgundy: rgba(140, 60, 70, 0.15);
+      --champagne: rgba(245, 230, 200, 0.06);
     }
 
+    /* ═══════════════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════════════ */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+    html { overflow-x: hidden; -webkit-text-size-adjust: 100%; scroll-behavior: auto; }
     body {
       font-family: 'Cormorant Garamond', Georgia, serif;
       background: var(--bg-deep);
@@ -34,1312 +40,193 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      cursor: default;
     }
     ::selection { background: rgba(201, 169, 110, 0.25); color: var(--text-primary); }
     ::-webkit-scrollbar { width: 0; height: 0; }
 
-    /* ═══════════════════════════════════════════
-       NOISE OVERLAY (film grain)
-       ═══════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════
+       GRAIN OVERLAY
+       ═══════════════════════════════════════════════════════ */
     .grain {
       position: fixed; inset: 0; z-index: 9998;
-      pointer-events: none; opacity: 0.03;
+      pointer-events: none; opacity: 0.028;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 256px;
     }
 
-    /* ═══════════════════════════════════════════
+    /* ═══════════════════════════════════════════════════════
        FIREFLY CANVAS
-       ═══════════════════════════════════════════ */
+       ═══════════════════════════════════════════════════════ */
     #fireflies {
       position: fixed; inset: 0; z-index: 1;
       pointer-events: none;
     }
 
-    /* ═══════════════════════════════════════════
-       LOADING SCREEN
-       ═══════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════
+       PROGRESS DOTS
+       ═══════════════════════════════════════════════════════ */
+    .progress-rail {
+      position: fixed; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column;
+      gap: 14px;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .progress-rail.show { opacity: 1; }
+    .p-dot {
+      width: 3px; height: 3px; border-radius: 50%;
+      background: rgba(201, 169, 110, 0.12);
+      transition: all 0.6s ease;
+    }
+    .p-dot.on {
+      background: rgba(201, 169, 110, 0.55);
+      box-shadow: 0 0 8px rgba(201, 169, 110, 0.2);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       MUSIC CONTROL
+       ═══════════════════════════════════════════════════════ */
+    .music-btn {
+      position: fixed; bottom: 24px; right: 18px; z-index: 200;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(201, 169, 110, 0.08);
+      border: 1px solid rgba(201, 169, 110, 0.15);
+      color: var(--gold-soft);
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0;
+    }
+    .music-btn.show { opacity: 1; }
+    .music-btn:hover { background: rgba(201, 169, 110, 0.15); }
+    .music-bars {
+      display: flex; align-items: flex-end; gap: 2px; height: 14px;
+    }
+    .music-bars span {
+      width: 2px; background: var(--gold-soft);
+      border-radius: 1px;
+      animation: musicBounce 0.8s ease-in-out infinite;
+    }
+    .music-bars span:nth-child(1) { height: 6px; animation-delay: 0s; }
+    .music-bars span:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+    .music-bars span:nth-child(3) { height: 4px; animation-delay: 0.3s; }
+    .music-bars span:nth-child(4) { height: 8px; animation-delay: 0.1s; }
+    @keyframes musicBounce {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.4); }
+    }
+    .music-btn.muted .music-bars span { animation: none; transform: scaleY(0.3); }
+
+    /* ═══════════════════════════════════════════════════════
+       LOADING
+       ═══════════════════════════════════════════════════════ */
     #loader {
       position: fixed; inset: 0; z-index: 9999;
       background: var(--bg-deep);
       display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 24px;
+      flex-direction: column; gap: 20px;
     }
-    #loader .loader-word {
+    .loader-msg {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 15px; font-weight: 300; font-style: italic;
+      font-size: 14px; font-weight: 300; font-style: italic;
       color: var(--gold-soft); opacity: 0;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
-    #loader .loader-line {
-      width: 32px; height: 1px;
+    .loader-bar {
+      width: 28px; height: 1px;
       background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
       transform: scaleX(0); transform-origin: center;
     }
 
-    /* ═══════════════════════════════════════════
-       GLOBAL TYPOGRAPHY UTILITIES
-       ═══════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════
+       NAME REVEAL (OPENING INTERACTION)
+       ═══════════════════════════════════════════════════════ */
+    #nameReveal {
+      position: fixed; inset: 0; z-index: 5000;
+      background: var(--bg-deep);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    #nameReveal.active { opacity: 1; pointer-events: all; }
+    #nameReveal .nr-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.8vw, 22px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.7;
+      max-width: 340px;
+      margin-bottom: 40px;
+      opacity: 0;
+    }
+    #nameReveal .nr-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(44px, 10vw, 80px);
+      font-weight: 400;
+      background: linear-gradient(135deg, var(--gold), var(--rose));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      margin-bottom: 12px;
+    }
+    #nameReveal .nr-heart {
+      font-size: 24px; opacity: 0;
+      color: var(--rose-soft);
+      margin-bottom: 48px;
+    }
+    #nameReveal .nr-input-wrap {
+      opacity: 0;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 16px;
+    }
+    #nameReveal .nr-input {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 300; font-style: italic;
+      color: var(--text-primary);
+      background: rgba(201, 169, 110, 0.05);
+      border: 1px solid rgba(201, 169, 110, 0.15);
+      padding: 14px 28px;
+      text-align: center;
+      outline: none;
+      width: 260px;
+      transition: border-color 0.4s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #nameReveal .nr-input::placeholder { color: var(--text-dim); font-style: italic; }
+    #nameReveal .nr-input:focus { border-color: rgba(201, 169, 110, 0.35); }
+    #nameReveal .nr-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 300;
+      letter-spacing: 5px; text-transform: uppercase;
+      color: var(--bg-deep);
+      background: linear-gradient(135deg, var(--gold), #d4b896);
+      border: none; cursor: pointer;
+      padding: 14px 40px;
+      transition: all 0.4s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #nameReveal .nr-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 24px rgba(201, 169, 110, 0.25); }
+    #nameReveal .nr-btn:disabled { opacity: 0.3; cursor: default; transform: none; box-shadow: none; }
+
+    /* ═══════════════════════════════════════════════════════
+       SHARED UTILITIES
+       ═══════════════════════════════════════════════════════ */
     .eyebrow {
       font-family: 'Inter', sans-serif;
       font-size: 10px; font-weight: 300;
       letter-spacing: 5px; text-transform: uppercase;
       color: var(--gold-soft);
+      display: block;
       margin-bottom: 28px;
-      display: block;
     }
 
-    /* ═══════════════════════════════════════════
-       ACT CONTAINER
-       ═══════════════════════════════════════════ */
-    .act {
-      min-height: 100dvh;
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 2;
-      padding: 80px 28px;
-    }
-    .act-inner {
-      max-width: 560px; width: 100%;
-    }
-
-    /* ═══════════════════════════════════════════
-       ACT 1: OPENING
-       Intimate. Her name, large. Nothing else.
-       ═══════════════════════════════════════════ */
-    #act1 {
-      flex-direction: column; text-align: center;
-      min-height: 100dvh; min-height: 100vh;
-    }
-    #act1 .opening-for {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px; font-weight: 300;
-      letter-spacing: 8px; text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 48px;
-      opacity: 0;
-    }
-    #act1 .opening-name {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(52px, 11vw, 100px);
-      font-weight: 400; line-height: 1.05;
-      color: var(--text-primary);
-      opacity: 0;
-    }
-    #act1 .opening-name em {
-      font-style: italic;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    #act1 .opening-dash {
-      width: 1px; height: 48px;
-      background: linear-gradient(180deg, transparent, var(--gold-soft), transparent);
-      margin: 44px auto;
-      opacity: 0;
-    }
-    #act1 .opening-line {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(17px, 2.8vw, 22px);
-      font-weight: 300; font-style: italic;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      max-width: 360px; margin: 0 auto;
-      opacity: 0;
-    }
-    #act1 .opening-scroll {
-      margin-top: 64px; opacity: 0;
-    }
-
-    /* ═══════════════════════════════════════════
-       ACT 2: HOW WE MET
-       Left-aligned, conversational. Real.
-       ═══════════════════════════════════════════ */
-    #act2 { justify-content: flex-start; padding-top: 120px; }
-    #act2 .act-inner { text-align: left; max-width: 480px; }
-    #act2 .act2-eyebrow { opacity: 0; }
-    #act2 .act2-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(30px, 6vw, 48px);
-      font-weight: 400; line-height: 1.2;
-      margin-bottom: 36px;
-      opacity: 0;
-    }
-    #act2 .act2-title em {
-      font-style: italic;
-      color: var(--gold-soft);
-    }
-    #act2 .act2-body {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(17px, 2.8vw, 21px);
-      font-weight: 300; line-height: 1.9;
-      color: var(--text-secondary);
-      opacity: 0;
-    }
-    #act2 .act2-body .accent {
-      color: var(--gold-soft); font-style: italic;
-    }
-    #act2 .act2-body .highlight {
-      color: var(--rose-soft);
-    }
-
-    /* ═══════════════════════════════════════════
-       ACT 3: THE MOMENTS
-       Alternating left/right for visual rhythm.
-       Three memories, each different.
-       ═══════════════════════════════════════════ */
-    #act3 { padding: 100px 28px; min-height: auto; }
-    #act3 .act-inner { max-width: 520px; }
-    #act3 .act3-eyebrow { opacity: 0; }
-    #act3 .act3-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(26px, 5vw, 38px);
-      font-weight: 400; line-height: 1.2;
-      margin-bottom: 56px;
-      opacity: 0;
-    }
-    #act3 .act3-title em {
-      font-style: italic;
-      color: var(--gold-soft);
-    }
-
-    .memory {
-      padding: 40px 0;
-      opacity: 0;
-      position: relative;
-    }
-    .memory + .memory {
-      border-top: 1px solid rgba(245, 240, 232, 0.06);
-    }
-    .memory-tag {
-      font-family: 'Inter', sans-serif;
-      font-size: 9px; font-weight: 300;
-      letter-spacing: 4px; text-transform: uppercase;
-      color: var(--gold-soft);
-      margin-bottom: 18px;
-      display: block;
-    }
-    .memory-text {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(17px, 2.8vw, 22px);
-      font-weight: 300; line-height: 1.85;
-      color: var(--text-secondary);
-    }
-    .memory-text em { color: var(--rose-soft); font-style: italic; }
-    .memory-text .gold { color: var(--gold-soft); font-style: italic; }
-
-    /* The "first time" memory gets pulled-left treatment */
-    .memory.quiet { padding-left: 0; }
-    /* The "laughter" memory gets an indent for rhythm */
-    .memory.laughter { padding-left: 24px; }
-    /* The "hard days" memory gets pulled back to left */
-    .memory.hard { padding-left: 0; }
-
-    /* ═══════════════════════════════════════════
-       ACT 4: THE LIST
-       Not bullets. Observations. The way someone
-       who loves you actually talks about you.
-       ═══════════════════════════════════════════ */
-    #act4 { padding: 120px 28px; }
-    #act4 .act-inner { max-width: 460px; text-align: left; }
-    #act4 .act4-eyebrow { opacity: 0; }
-    #act4 .act4-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(24px, 5vw, 36px);
-      font-weight: 400; line-height: 1.25;
-      margin-bottom: 44px;
-      opacity: 0;
-    }
-    #act4 .act4-title em {
-      font-style: italic;
-      color: var(--gold-soft);
-    }
-    #act4 .observation {
-      padding: 22px 0;
-      border-bottom: 1px solid rgba(245, 240, 232, 0.04);
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(16px, 2.6vw, 20px);
-      font-weight: 300; line-height: 1.8;
-      color: var(--text-secondary);
-      opacity: 0;
-      position: relative;
-      padding-left: 28px;
-    }
-    #act4 .observation::before {
-      content: '';
-      position: absolute; left: 0; top: 28px;
-      width: 12px; height: 1px;
-      background: var(--gold-soft);
-      opacity: 0.4;
-    }
-    #act4 .observation:last-child { border-bottom: none; }
-    #act4 .observation em { color: var(--rose-soft); font-style: italic; }
-    #act4 .observation .gold { color: var(--gold-soft); }
-
-    /* ═══════════════════════════════════════════
-       ACT 5: THE BUILD-UP
-       Accelerating pace. Short lines. Tension.
-       This is where she starts to feel it coming.
-       ═══════════════════════════════════════════ */
-    #act5 { flex-direction: column; padding: 100px 28px; }
-    #act5 .act-inner {
-      max-width: 420px;
-      display: flex; flex-direction: column;
-      align-items: center; text-align: center;
-    }
-    #act5 .act5-eyebrow { opacity: 0; }
-
-    .tension-line {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300; line-height: 1.8;
-      color: var(--text-secondary);
-      opacity: 0;
-      max-width: 380px;
-    }
-    .tension-line.soft {
-      font-size: clamp(17px, 2.8vw, 21px);
-    }
-    .tension-line.medium {
-      font-size: clamp(19px, 3.2vw, 24px);
-      color: rgba(245, 240, 232, 0.7);
-    }
-    .tension-line.strong {
-      font-size: clamp(21px, 3.5vw, 27px);
-      color: rgba(245, 240, 232, 0.8);
-      font-weight: 400;
-    }
-    .tension-line.strong em {
-      color: var(--gold-soft);
-      font-style: italic;
-    }
-    .tension-line.final {
-      font-size: clamp(22px, 3.8vw, 30px);
-      color: var(--text-primary);
-      font-weight: 500;
-      font-style: italic;
-    }
-    .tension-gap {
-      width: 1px; height: 36px;
-      background: linear-gradient(180deg, transparent, rgba(201, 169, 110, 0.15), transparent);
-      margin: 44px 0;
-      opacity: 0;
-    }
-
-    /* The precipice — the moment before the question */
-    #act5 .precipice {
-      margin-top: 20px;
-      opacity: 0;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(15px, 2.2vw, 17px);
-      font-weight: 300; font-style: italic;
-      color: var(--text-dim);
-      letter-spacing: 0.5px;
-    }
-
-    /* ═══════════════════════════════════════════
-       ACT 6: THE PROPOSAL
-       BREAKS EVERY PATTERN ABOVE.
-       Full-bleed. Center. Everything stops.
-       Cinematic letterbox bars.
-       The detonation.
-       ═══════════════════════════════════════════ */
-    #act6 {
-      min-height: 100dvh; min-height: 100vh;
-      background: var(--bg-deep);
-      position: relative;
-      overflow: hidden;
-    }
-    /* Letterbox bars — cinematic framing */
-    #act6 .letterbox-top,
-    #act6 .letterbox-bottom {
-      position: absolute; left: 0; right: 0;
-      height: 0;
-      background: #000;
-      z-index: 5;
-      transition: height 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-    }
-    #act6 .letterbox-top { top: 0; }
-    #act6 .letterbox-bottom { bottom: 0; }
-    #act6.letterboxed .letterbox-top,
-    #act6.letterboxed .letterbox-bottom {
-      height: 8vh;
-    }
-
-    /* Vignette */
-    #act6 .proposal-vignette {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, transparent 20%, var(--bg-deep) 75%);
-      pointer-events: none; z-index: 2;
-    }
-
-    /* Breathing glow behind her name */
-    #act6 .proposal-aura {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 400px; height: 400px;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(201, 169, 110, 0.04) 0%, transparent 60%);
-      pointer-events: none; z-index: 1;
-      opacity: 0;
-    }
-
-    #act6 .proposal-content {
-      position: relative; z-index: 3;
-      text-align: center;
-      padding: 0 20px;
-    }
-
-    /* Prelude whisper */
-    #act6 .proposal-whisper {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(15px, 2.4vw, 19px);
-      font-weight: 300; font-style: italic;
-      color: var(--text-dim);
-      line-height: 1.7;
-      margin-bottom: 56px;
-      opacity: 0;
-    }
-
-    /* Thin gold rule */
-    #act6 .proposal-rule {
-      width: 1px; height: 56px;
-      background: linear-gradient(180deg, transparent, var(--gold-soft), transparent);
-      margin: 0 auto 48px;
-      opacity: 0;
-    }
-
-    /* HER NAME — massive, weightless */
-    #act6 .proposal-name {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(56px, 13vw, 120px);
-      font-weight: 400; line-height: 1;
-      background: linear-gradient(180deg, var(--text-primary) 0%, var(--gold) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 40px;
-      opacity: 0;
-    }
-
-    /* THE QUESTION — this is the bomb */
-    #act6 .proposal-question {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(26px, 5vw, 42px);
-      font-weight: 400; font-style: italic;
-      color: var(--text-primary);
-      line-height: 1.35;
-      opacity: 0;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-
-    /* Heartbeat line */
-    #act6 .proposal-pulse {
-      width: 180px; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--rose-soft), transparent);
-      margin: 48px auto 0;
-      opacity: 0;
-      animation: pulseLine 1.6s ease-in-out infinite;
-    }
-    @keyframes pulseLine {
-      0%, 100% { transform: scaleX(1); opacity: 0.5; }
-      15% { transform: scaleX(1.6); opacity: 1; }
-      30% { transform: scaleX(0.9); opacity: 0.4; }
-      45% { transform: scaleX(1.3); opacity: 0.8; }
-      60% { transform: scaleX(1); opacity: 0.5; }
-    }
-
-    /* THE BUTTON — not a button. A promise. */
-    .btn-promise {
-      display: inline-block;
-      font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 300;
-      letter-spacing: 6px; text-transform: uppercase;
-      color: var(--bg-deep);
-      background: linear-gradient(135deg, var(--gold) 0%, #d4b896 100%);
-      border: none; cursor: pointer;
-      padding: 20px 56px;
-      margin-top: 56px;
-      position: relative;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.4s ease;
-      opacity: 0;
-    }
-    .btn-promise::after {
-      content: '';
-      position: absolute; inset: -6px;
-      border: 1px solid rgba(201, 169, 110, 0.15);
-      pointer-events: none;
-      transition: all 0.4s ease;
-    }
-    .btn-promise:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(201, 169, 110, 0.2), 0 0 80px rgba(201, 169, 110, 0.1);
-    }
-    .btn-promise:hover::after {
-      inset: -10px;
-      border-color: rgba(201, 169, 110, 0.25);
-    }
-    .btn-promise:active {
-      transform: translateY(0) scale(0.98);
-    }
-
-    /* ═══════════════════════════════════════════
-       ACT 7: YES
-       A completely different world.
-       Warm. Expansive. Alive.
-       ═══════════════════════════════════════════ */
-    #act7 {
-      display: none;
-      min-height: 100dvh; min-height: 100vh;
-      background: var(--bg-mid);
-      position: relative;
-      overflow: hidden;
-    }
-    #act7 .yes-aura {
-      position: absolute;
-      width: 100%; height: 100%;
-      background: radial-gradient(ellipse at 50% 40%, rgba(201, 169, 110, 0.04) 0%, transparent 50%);
-      pointer-events: none;
-    }
-    #act7 .yes-canvas {
-      position: absolute; inset: 0;
-      pointer-events: none;
-    }
-    #act7 .yes-inner {
-      position: relative; z-index: 2;
-      text-align: center;
-      padding: 0 28px;
-    }
-    #act7 .yes-eyebrow {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(14px, 2.2vw, 17px);
-      font-weight: 300; font-style: italic;
-      color: var(--rose-soft);
-      margin-bottom: 24px;
-      opacity: 0;
-    }
-    #act7 .yes-word {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(64px, 16vw, 180px);
-      font-weight: 400; line-height: 0.95;
-      background: linear-gradient(180deg, var(--gold) 0%, var(--rose) 50%, var(--gold) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      opacity: 0;
-      letter-spacing: -3px;
-      filter: drop-shadow(0 0 60px rgba(201, 169, 110, 0.15));
-    }
-    #act7 .yes-underline {
-      width: 60px; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
-      margin: 32px auto;
-      opacity: 0;
-    }
-    #act7 .yes-line {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(18px, 3vw, 25px);
-      font-weight: 300; font-style: italic;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      max-width: 400px;
-      margin: 0 auto;
-      opacity: 0;
-    }
-    #act7 .yes-signature {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(16px, 2.4vw, 20px);
-      font-weight: 400; font-style: italic;
-      color: var(--gold-soft);
-      margin-top: 60px;
-      opacity: 0;
-    }
-    #act7 .yes-date {
-      font-family: 'Inter', sans-serif;
-      font-size: 10px; font-weight: 200;
-      letter-spacing: 4px;
-      color: var(--text-dim);
-      margin-top: 16px;
-      opacity: 0;
-    }
-    #act7 .yes-ring-mark {
-      width: 72px; height: 72px;
-      border: 1px solid rgba(201, 169, 110, 0.12);
-      border-radius: 50%;
-      margin: 48px auto 0;
-      position: relative;
-      opacity: 0;
-    }
-    #act7 .yes-ring-mark::before {
-      content: '';
-      position: absolute; inset: 6px;
-      border-radius: 50%;
-      border: 1px solid rgba(201, 169, 110, 0.06);
-    }
-    #act7 .yes-ring-mark::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 6px; height: 6px;
-      background: rgba(201, 169, 110, 0.25);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    /* ═══════════════════════════════════════════
-       PROGRESS INDICATOR
-       Subtle dots along the right edge
-       ═══════════════════════════════════════════ */
-    .progress {
-      position: fixed; right: 16px; top: 50%;
-      transform: translateY(-50%);
-      z-index: 100;
-      display: flex; flex-direction: column;
-      gap: 12px;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-    }
-    .progress.visible { opacity: 1; }
-    .progress-dot {
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: rgba(201, 169, 110, 0.15);
-      transition: all 0.6s ease;
-    }
-    .progress-dot.reached {
-      background: rgba(201, 169, 110, 0.5);
-      box-shadow: 0 0 6px rgba(201, 169, 110, 0.2);
-    }
-
-    /* ═══════════════════════════════════════════
-       FLOATING PETAL (for YES)
-       ═══════════════════════════════════════════ */
-    .petal {
-      position: fixed; pointer-events: none; z-index: 5;
-      opacity: 0;
-      border-radius: 50% 0 50% 0;
-    }
-
-    /* ═══════════════════════════════════════════
-       RESPONSIVE
-       ═══════════════════════════════════════════ */
-    @media (max-width: 480px) {
-      .act { padding: 60px 20px; }
-      #act2 { padding-top: 100px; }
-      .memory.laughter { padding-left: 16px; }
-      .btn-promise { padding: 18px 44px; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Film grain -->
-  <div class="grain"></div>
-
-  <!-- Firefly particles -->
-  <canvas id="fireflies"></canvas>
-
-  <!-- Progress indicator -->
-  <div class="progress" id="progress">
-    <div class="progress-dot"></div>
-    <div class="progress-dot"></div>
-    <div class="progress-dot"></div>
-    <div class="progress-dot"></div>
-    <div class="progress-dot"></div>
-    <div class="progress-dot"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       LOADING
-       ═══════════════════════════════════════════════════ -->
-  <div id="loader">
-    <div class="loader-word">for someone special</div>
-    <div class="loader-line"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 1: OPENING
-       Just her name. Nothing else matters right now.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act1" class="act">
-    <div style="text-align:center;">
-      <div class="opening-for">a letter for</div>
-      <h1 class="opening-name">N<em>i</em>kku</h1>
-      <div class="opening-dash"></div>
-      <p class="opening-line">
-        from the one who can't stop thinking about you
-      </p>
-      <div class="opening-scroll">
-        <button class="continue-btn" onclick="goToAct(2)">
-          begin
-          <span class="arrow"></span>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 2: HOW WE MET
-       Left-aligned. Conversational. Real.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act2" class="act">
-    <div class="act-inner">
-      <span class="eyebrow act2-eyebrow">chapter one</span>
-      <h2 class="act2-title">
-        It was <em>college</em>
-      </h2>
-      <p class="act2-body">
-        Some days were long. The lectures blurred together. The same chai from the canteen,
-        the same walk back, the same playlist on repeat.
-        And then you were there — and suddenly everything had a soundtrack.
-      </p>
-      <p class="act2-body" style="margin-top: 24px;">
-        I didn't plan it. I didn't see it coming.
-        But one day I caught myself looking for you in every crowd,
-        and I knew I was <span class="accent">already in it</span>.
-      </p>
-      <button class="continue-btn" onclick="goToAct(3)" style="margin-top: 48px;">
-        continue
-        <span class="arrow"></span>
-      </button>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 3: THREE YEARS
-       Three memories. Each one a different rhythm.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act3" class="act">
-    <div class="act-inner">
-      <span class="eyebrow act3-eyebrow">chapter two</span>
-      <h2 class="act3-title">
-        1,095 days of <em>us</em>
-      </h2>
-
-      <div class="memory quiet">
-        <span class="memory-tag">the first time</span>
-        <div class="memory-text">
-          I remember the exact moment.
-          Not dramatic. Not movie-scene.
-          Just you, laughing at something stupid I said,
-          and I thought — <em>I want this forever.</em>
-        </div>
-      </div>
-
-      <div class="memory laughter">
-        <span class="memory-tag">the laughter</span>
-        <div class="memory-text">
-          The late-night calls that turned into morning.
-          The terrible movies we sat through because you picked them.
-          The way you laugh at my jokes even when they're not funny.
-          Especially when they're not funny.
-        </div>
-      </div>
-
-      <div class="memory hard">
-        <span class="memory-tag">the hard days</span>
-        <div class="memory-text">
-          We've had them. The kind that test you.
-          And every single time,
-          I'd rather be in the middle of it with you
-          than anywhere else without you.
-        </div>
-      </div>
-
-      <button class="continue-btn" onclick="goToAct(4)" style="margin-top: 48px;">
-        continue
-        <span class="arrow"></span>
-      </button>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 4: WHAT I KNOW
-       Observations. Not compliments — things I've
-       actually noticed. Things that are true.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act4" class="act">
-    <div class="act-inner">
-      <span class="eyebrow act4-eyebrow">chapter three</span>
-      <h2 class="act4-title">
-        Here's what I know about <em>you</em>
-      </h2>
-
-      <div class="observation">
-        The way your face lights up when you talk about something you love
-      </div>
-      <div class="observation">
-        How you <em>listen</em> — really listen — like nothing else exists in that moment
-      </div>
-      <div class="observation">
-        That you pick up the check when you think I'm low on cash
-        <span class="gold">and pretend you didn't notice</span>
-      </div>
-      <div class="observation">
-        Your terrible taste in movies and your perfect taste in everything else
-      </div>
-      <div class="observation">
-        The way you make any ordinary day feel like it's worth remembering
-      </div>
-
-      <button class="continue-btn" onclick="goToAct(5)" style="margin-top: 48px;">
-        continue
-        <span class="arrow"></span>
-      </button>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 5: THE BUILD-UP
-       Accelerating. Short lines. She should feel
-       her heart rate change. The precipice.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act5" class="act">
-    <div class="act-inner">
-      <span class="eyebrow act5-eyebrow">chapter four</span>
-
-      <p class="tension-line soft">
-        Three years.
-      </p>
-      <div class="tension-gap"></div>
-
-      <p class="tension-line medium">
-        1,095 days.
-        <br>Over 26,000 hours.
-      </p>
-      <div class="tension-gap"></div>
-
-      <p class="tension-line medium">
-        And not one of them was a waste.
-      </p>
-      <div class="tension-gap"></div>
-
-      <p class="tension-line strong">
-        You know all of me.
-        <br>The messy parts. The quiet parts.
-        <br>The parts I don't show anyone else.
-        <br>And you <em>stayed</em>.
-      </p>
-      <div class="tension-gap"></div>
-
-      <p class="tension-line strong">
-        Not because you had to.
-        <br>Because you <em>wanted</em> to.
-      </p>
-      <div class="tension-gap"></div>
-
-      <p class="tension-line final">
-        And I want the rest of your days.
-        <br>All of them.
-      </p>
-
-      <p class="precipice">
-        There's something I need to say.
-        <br>Something that's been sitting here for a while.
-      </p>
-
-      <button class="continue-btn" onclick="goToAct(6)" style="margin-top: 48px;">
-        I'm listening
-        <span class="arrow"></span>
-      </button>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 6: THE PROPOSAL
-       Everything stops. Letterbox opens.
-       Her name. The pause. The question.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act6" class="act">
-    <div class="letterbox-top"></div>
-    <div class="letterbox-bottom"></div>
-    <div class="proposal-vignette"></div>
-    <div class="proposal-aura"></div>
-    <div class="proposal-content">
-      <div class="proposal-whisper">
-        I've been carrying this for a while…
-      </div>
-      <div class="proposal-rule"></div>
-      <div class="proposal-name">Nikku</div>
-      <div class="proposal-question">
-        Will you marry me?
-      </div>
-      <div class="proposal-pulse"></div>
-      <button class="btn-promise" onclick="sayYes()">Yes</button>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════
-       ACT 7: YES
-       A different world. Warm. Expansive. Alive.
-       ═══════════════════════════════════════════════════ -->
-  <section id="act7">
-    <canvas class="yes-canvas" id="petals"></canvas>
-    <div class="yes-aura"></div>
-    <div class="yes-inner">
-      <div class="yes-eyebrow">she said</div>
-      <div class="yes-word">YES</div>
-      <div class="yes-underline"></div>
-      <div class="yes-line">
-        You just made me the happiest person alive.
-        <br><br>
-        This is us. Starting.
-        <br>Every chapter from here — together.
-      </div>
-      <div class="yes-signature">forever yours</div>
-      <div class="yes-date">our story continues</div>
-      <div class="yes-ring-mark"></div>
-    </div>
-  </section>
-
-  <script>
-  /* ═══════════════════════════════════════════════
-     FIREFLY SYSTEM
-     Ambient warmth throughout. Slows during proposal.
-     Shifts to gold/rose on YES.
-     ═══════════════════════════════════════════════ */
-  ;(function() {
-    const canvas = document.getElementById('fireflies');
-    const ctx = canvas.getContext('2d');
-    let W, H, particles = [];
-    let proposalActive = false;
-    let yesMode = false;
-
-    function resize() {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    class Firefly {
-      constructor(initial) { this.init(initial); }
-      init(scatter) {
-        this.x = Math.random() * W;
-        this.y = scatter ? Math.random() * H : (Math.random() < 0.5 ? -10 : H + 10);
-        this.r = Math.random() * 1.4 + 0.4;
-        this.vx = (Math.random() - 0.5) * 0.25;
-        this.vy = (Math.random() - 0.5) * 0.25;
-        this.phase = Math.random() * Math.PI * 2;
-        this.phaseSpeed = (Math.random() - 0.5) * 0.015;
-        this.drift = Math.random() * 0.4 + 0.1;
-        this.driftSpeed = (Math.random() * 0.02 + 0.005);
-        this.maxAlpha = Math.random() * 0.35 + 0.08;
-        this.alpha = this.maxAlpha;
-        this.fadeDir = 1;
-        this.fadeSpeed = Math.random() * 0.004 + 0.001;
-      }
-      update() {
-        const slow = proposalActive ? 0.2 : 1;
-        this.phase += this.phaseSpeed;
-        this.x += (this.vx * slow) + Math.sin(this.phase) * this.drift * 0.3;
-        this.y += (this.vy * slow) + Math.cos(this.phase) * this.drift * 0.2;
-
-        this.alpha += this.fadeDir * this.fadeSpeed * (proposalActive ? 0.4 : 1);
-        const cap = proposalActive ? 0.12 : this.maxAlpha;
-        if (this.alpha > cap) { this.alpha = cap; this.fadeDir = -1; }
-        if (this.alpha < 0.015) { this.alpha = 0.015; this.fadeDir = 1; }
-
-        if (this.x < -30 || this.x > W + 30 || this.y < -30 || this.y > H + 30) {
-          this.init(false);
-        }
-      }
-      draw() {
-        const a = yesMode ? this.alpha * 1.5 : this.alpha;
-        // Core
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        if (yesMode) {
-          ctx.fillStyle = Math.random() > 0.5
-            ? `rgba(232,180,184,${Math.min(a, 0.6)})`
-            : `rgba(201,169,110,${Math.min(a, 0.6)})`;
-        } else if (proposalActive) {
-          ctx.fillStyle = `rgba(180,160,140,${a * 0.5})`;
-        } else {
-          ctx.fillStyle = `rgba(190,170,140,${a})`;
-        }
-        ctx.fill();
-        // Soft halo
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r * 4, 0, Math.PI * 2);
-        if (yesMode) {
-          ctx.fillStyle = `rgba(232,180,184,${a * 0.08})`;
-        } else if (proposalActive) {
-          ctx.fillStyle = `rgba(201,169,110,${a * 0.04})`;
-        } else {
-          ctx.fillStyle = `rgba(190,170,140,${a * 0.06})`;
-        }
-        ctx.fill();
-      }
-    }
-
-    const count = Math.min(Math.floor((W * H) / 18000), 70);
-    for (let i = 0; i < count; i++) particles.push(new Firefly(true));
-
-    function loop() {
-      ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => { p.update(); p.draw(); });
-      requestAnimationFrame(loop);
-    }
-    loop();
-
-    window._setProposal = v => proposalActive = v;
-    window._setYes = v => yesMode = v;
-  })();
-
-  /* ═══════════════════════════════════════════════
-     PETAL SYSTEM — for YES celebration
-     Rose and gold petals, not rectangles.
-     Soft, curved, drifting.
-     ═══════════════════════════════════════════════ */
-  class PetalSystem {
-    constructor(canvas) {
-      this.canvas = canvas;
-      this.ctx = canvas.getContext('2d');
-      this.petals = [];
-      this.running = false;
-      this.resize();
-    }
-    resize() {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
-    }
-    spawn(count) {
-      const W = this.canvas.width;
-      const colors = [
-        '201,169,110', '232,180,184', '220,195,170',
-        '210,185,165', '240,225,210', '225,200,185'
-      ];
-      for (let i = 0; i < count; i++) {
-        this.petals.push({
-          x: Math.random() * W,
-          y: -20 - Math.random() * 300,
-          size: Math.random() * 7 + 3,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          alpha: Math.random() * 0.45 + 0.15,
-          rot: Math.random() * 360,
-          rotV: (Math.random() - 0.5) * 2.5,
-          vx: (Math.random() - 0.5) * 0.8,
-          vy: Math.random() * 1.2 + 0.4,
-          sway: Math.random() * 1.5 + 0.5,
-          swaySpeed: Math.random() * 0.015 + 0.008,
-          swayOffset: Math.random() * Math.PI * 2,
-          life: 1,
-          decay: 0.0006 + Math.random() * 0.0003
-        });
-      }
-    }
-    start() {
-      if (this.running) return;
-      this.running = true;
-      this.resize();
-      window.addEventListener('resize', () => this.resize());
-      this.spawn(150);
-      this._loop = setInterval(() => {
-        if (this.petals.length < 250) this.spawn(12);
-      }, 500);
-      this.animate();
-    }
-    stop() {
-      this.running = false;
-      clearInterval(this._loop);
-      cancelAnimationFrame(this._raf);
-      this.petals = [];
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-    animate() {
-      if (!this.running) return;
-      const ctx = this.ctx;
-      const W = this.canvas.width, H = this.canvas.height;
-      ctx.clearRect(0, 0, W, H);
-      const t = performance.now() * 0.001;
-
-      this.petals = this.petals.filter(p => {
-        p.y += p.vy;
-        p.x += p.vx + Math.sin(t + p.swayOffset) * p.sway;
-        p.rot += p.rotV;
-        p.life -= p.decay;
-        if (p.life <= 0 || p.y > H + 40) return false;
-
-        const a = p.alpha * p.life;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot * Math.PI / 180);
-        ctx.fillStyle = `rgba(${p.color},${a})`;
-        ctx.beginPath();
-        // Petal shape: ellipse rotated
-        ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        return true;
-      });
-
-      this._raf = requestAnimationFrame(() => this.animate());
-    }
-  }
-
-  /* ═══════════════════════════════════════════════
-     CONTINUE BUTTONS
-     Each act gets its own emotionally-worded button.
-     ═══════════════════════════════════════════════ */
-  const btnLabels = {
-    2: 'continue',
-    3: 'continue',
-    4: 'continue',
-    5: 'I\'m listening',
-    6: 'I\'m ready'
-  };
-
-  function renderContinueBtn(actNum) {
-    return `<button class="continue-btn" onclick="goToAct(${actNum + 1})">
-      ${btnLabels[actNum]}
-      <span class="arrow"></span>
-    </button>`;
-  }
-
-  /* ═══════════════════════════════════════════════
-     NAVIGATION
-     ═══════════════════════════════════════════════ */
-  let petals;
-  let letterboxed = false;
-
-  function goToAct(num) {
-    const el = document.getElementById('act' + num);
-    if (!el) return;
-
-    // Signal fireflies
-    if (num === 6) { window._setProposal(true); }
-    if (num === 1) { window._setProposal(false); }
-
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setTimeout(() => animateAct(num), 500);
-  }
-
-  /* ═══════════════════════════════════════════════
-     ANIMATION TIMELINES
-     Each act has a unique choreography.
-     ═══════════════════════════════════════════════ */
-  const anims = {};
-
-  anims[1] = () => {
-    const tl = gsap.timeline();
-    tl.to('#act1 .opening-for', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0);
-    tl.to('#act1 .opening-name', { opacity: 1, y: 0, duration: 1.6, ease: 'power3.out' }, 0.4);
-    tl.to('#act1 .opening-dash', { opacity: 1, scaleY: 1, duration: 0.8, ease: 'power2.inOut' }, 1.2);
-    tl.to('#act1 .opening-line', { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' }, 1.5);
-    tl.to('#act1 .opening-scroll', { opacity: 1, duration: 0.8 }, 2.2);
-  };
-
-  anims[2] = () => {
-    const tl = gsap.timeline();
-    tl.to('#act2 .act2-eyebrow', { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);
-    tl.to('#act2 .act2-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
-    tl.to('#act2 .act2-body', { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: 'power2.out' }, 0.5);
-    tl.from('#act2 .continue-btn', { opacity: 0, duration: 0.8 }, 1.6);
-  };
-
-  anims[3] = () => {
-    const tl = gsap.timeline();
-    tl.to('#act3 .act3-eyebrow', { opacity: 1, duration: 0.6 }, 0);
-    tl.to('#act3 .act3-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
-    tl.to('#act3 .memory', { opacity: 1, x: 0, duration: 0.9, stagger: 0.2, ease: 'power2.out' }, 0.5);
-    tl.from('#act3 .continue-btn', { opacity: 0, duration: 0.8 }, 1.8);
-  };
-
-  anims[4] = () => {
-    const tl = gsap.timeline();
-    tl.to('#act4 .act4-eyebrow', { opacity: 1, duration: 0.6 }, 0);
-    tl.to('#act4 .act4-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
-    tl.to('#act4 .observation', { opacity: 1, x: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out' }, 0.5);
-    tl.from('#act4 .continue-btn', { opacity: 0, duration: 0.8 }, 1.8);
-  };
-
-  anims[5] = () => {
-    const tl = gsap.timeline();
-    tl.to('#act5 .act5-eyebrow', { opacity: 1, duration: 0.6 }, 0);
-    tl.to('#act5 .tension-line', { opacity: 1, y: 0, duration: 1, stagger: 0.3, ease: 'power2.out' }, 0.3);
-    tl.to('#act5 .tension-gap', { opacity: 1, scaleY: 1, duration: 0.6, stagger: 0.3, ease: 'power2.inOut' }, 0.3);
-    tl.to('#act5 .precipice', { opacity: 1, duration: 1.2, ease: 'power2.out' }, 3.5);
-    tl.from('#act5 .continue-btn', { opacity: 0, duration: 0.8 }, 4.2);
-  };
-
-  anims[6] = () => {
-    if (letterboxed) return;
-    letterboxed = true;
-
-    // Enable letterbox
-    document.getElementById('act6').classList.add('letterboxed');
-
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-
-    // Everything slows. The whisper.
-    tl.to('#act6 .proposal-whisper', { opacity: 1, duration: 1.8 }, 0);
-    // The rule descends — like breath
-    tl.to('#act6 .proposal-rule', { opacity: 1, scaleY: 1, duration: 1, ease: 'power2.inOut' }, 1.2);
-    // Aura breathes
-    tl.to('#act6 .proposal-aura', { opacity: 1, duration: 1.5 }, 1.5);
-    // HER NAME — this is the crescendo
-    tl.to('#act6 .proposal-name', {
-      opacity: 1, y: 0, scale: 1,
-      duration: 1.4, ease: 'power3.out'
-    }, 2.0);
-    // THE QUESTION — detonation
-    tl.to('#act6 .proposal-question', {
-      opacity: 1, duration: 1.4, ease: 'power2.out'
-    }, 3.5);
-    // Heartbeat
-    tl.to('#act6 .proposal-pulse', { opacity: 1, duration: 0.6 }, 4.5);
-    // The button — the only choice
-    tl.to('#act6 .btn-promise', { opacity: 1, duration: 1, ease: 'power2.out' }, 4.8);
-  };
-
-  anims[7] = () => animateYes();
-
-  function animateAct(num) {
-    if (anims[num]) anims[num]();
-  }
-
-  /* ═══════════════════════════════════════════════
-     YES CELEBRATION
-     A different world. Warm gold and rose.
-     ═══════════════════════════════════════════════ */
-  function sayYes() {
-    const act7 = document.getElementById('act7');
-    act7.style.display = 'block';
-    window.scrollTo(0, 0);
-
-    // Fireflies shift to celebration mode
-    window._setYes(true);
-
-    // Launch petals
-    petals = new PetalSystem(document.getElementById('petals'));
-    petals.start();
-
-    // Animate the YES scene
-    setTimeout(() => animateYes(), 200);
-  }
-
-  function animateYes() {
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-    tl.to('#act7 .yes-eyebrow', { opacity: 1, duration: 1.2 }, 0);
-    tl.to('#act7 .yes-word', { opacity: 1, scale: 1, duration: 1.8, ease: 'elastic.out(1, 0.5)' }, 0.3);
-    tl.to('#act7 .yes-underline', { opacity: 1, scaleX: 1, duration: 0.8, ease: 'power2.inOut' }, 1.4);
-    tl.to('#act7 .yes-line', { opacity: 1, y: 0, duration: 1.6 }, 1.6);
-    tl.to('#act7 .yes-signature', { opacity: 1, duration: 1.2 }, 2.8);
-    tl.to('#act7 .yes-date', { opacity: 1, duration: 1 }, 3.4);
-    tl.to('#act7 .yes-ring-mark', { opacity: 1, duration: 1.5 }, 3);
-  }
-
-  /* ═══════════════════════════════════════════════
-     LOADER
-     ═══════════════════════════════════════════════ */
-  window.addEventListener('load', () => {
-    const tl = gsap.timeline({
-      onComplete() {
-        gsap.to('#loader', {
-          opacity: 0, duration: 0.8, ease: 'power2.inOut',
-          onComplete() {
-            document.getElementById('loader').style.display = 'none';
-            animateAct(1);
-          }
-        });
-      }
-    });
-    tl.to('#loader .loader-word', { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
-    tl.to('#loader .loader-line', { scaleX: 1, duration: 2.8, ease: 'power1.inOut' }, 0.4);
-    tl.to('#loader .loader-word', { opacity: 0, duration: 0.5 }, 3.2);
-  });
-
-  /* ═══════════════════════════════════════════════
-     INIT STATES
-     ═══════════════════════════════════════════════ */
-  gsap.set('#act1 .opening-for', { opacity: 0, y: 20 });
-  gsap.set('#act1 .opening-name', { opacity: 0, y: 30 });
-  gsap.set('#act1 .opening-dash', { opacity: 0, scaleY: 0 });
-  gsap.set('#act1 .opening-line', { opacity: 0, y: 15 });
-  gsap.set('#act1 .opening-scroll', { opacity: 0 });
-
-  gsap.set('#act2 .act2-eyebrow', { opacity: 0 });
-  gsap.set('#act2 .act2-title', { opacity: 0, y: 20 });
-  gsap.set('#act2 .act2-body', { opacity: 0, y: 20 });
-
-  gsap.set('#act3 .act3-eyebrow', { opacity: 0 });
-  gsap.set('#act3 .act3-title', { opacity: 0, y: 20 });
-  gsap.set('.memory', { opacity: 0, x: -15 });
-
-  gsap.set('#act4 .act4-eyebrow', { opacity: 0 });
-  gsap.set('#act4 .act4-title', { opacity: 0, y: 20 });
-  gsap.set('#act4 .observation', { opacity: 0, x: -10 });
-
-  gsap.set('#act5 .act5-eyebrow', { opacity: 0 });
-  gsap.set('#act5 .tension-line', { opacity: 0, y: 20 });
-  gsap.set('#act5 .tension-gap', { opacity: 0, scaleY: 0 });
-  gsap.set('#act5 .precipice', { opacity: 0 });
-
-  gsap.set('#act6 .proposal-whisper', { opacity: 0 });
-  gsap.set('#act6 .proposal-rule', { opacity: 0, scaleY: 0 });
-  gsap.set('#act6 .proposal-aura', { opacity: 0 });
-  gsap.set('#act6 .proposal-name', { opacity: 0, y: 20, scale: 0.97 });
-  gsap.set('#act6 .proposal-question', { opacity: 0 });
-  gsap.set('#act6 .proposal-pulse', { opacity: 0 });
-  gsap.set('#act6 .btn-promise', { opacity: 0 });
-
-  gsap.set('#act7 .yes-eyebrow', { opacity: 0 });
-  gsap.set('#act7 .yes-word', { opacity: 0, scale: 0.85 });
-  gsap.set('#act7 .yes-underline', { opacity: 0, scaleX: 0 });
-  gsap.set('#act7 .yes-line', { opacity: 0, y: 20 });
-  gsap.set('#act7 .yes-signature', { opacity: 0 });
-  gsap.set('#act7 .yes-date', { opacity: 0 });
-  gsap.set('#act7 .yes-ring-mark', { opacity: 0 });
-
-  /* ═══════════════════════════════════════════════
-     PROGRESS DOTS
-     ═══════════════════════════════════════════════ */
-  const progressEl = document.getElementById('progress');
-  const dots = progressEl.querySelectorAll('.progress-dot');
-
-  function updateProgress(currentAct) {
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('reached', i < currentAct);
-    });
-  }
-
-  /* ═══════════════════════════════════════════════
-     SCROLL: Show progress after first interaction
-     ═══════════════════════════════════════════════ */
-  let progressVisible = false;
-
-  function showProgress() {
-    if (!progressVisible) {
-      progressVisible = true;
-      progressEl.classList.add('visible');
-    }
-  }
-
-  // Override goToAct to also update progress
-  const _origGoToAct = goToAct;
-
-  /* ═══════════════════════════════════════════════
-     SCROLL TRIGGER: show progress on scroll
-     ═══════════════════════════════════════════════ */
-  let scrollHandled = false;
-  window.addEventListener('scroll', () => {
-    if (!scrollHandled && window.scrollY > 100) {
-      scrollHandled = true;
-      showProgress();
-    }
-  }, { passive: true });
-
-  // Also show on first button tap
-  document.querySelectorAll('.continue-btn').forEach(btn => {
-    btn.addEventListener('click', showProgress, { once: true });
-  });
-
-  /* ═══════════════════════════════════════════════
-     CONTINUE BUTTON STYLES (shared)
-     ═══════════════════════════════════════════════ */
-  const btnStyle = document.createElement('style');
-  btnStyle.textContent = `
     .continue-btn {
       display: inline-flex; align-items: center; gap: 12px;
       font-family: 'Inter', sans-serif;
@@ -1348,7 +235,7 @@
       color: rgba(201, 169, 110, 0.45);
       background: none; border: none; cursor: pointer;
       padding: 32px 0 8px;
-      transition: color 0.4s ease, opacity 0.4s ease;
+      transition: color 0.4s ease;
       -webkit-tap-highlight-color: transparent;
       animation: breathe 3.5s ease-in-out infinite;
     }
@@ -1356,10 +243,7 @@
       0%, 100% { opacity: 0.45; }
       50% { opacity: 0.75; }
     }
-    .continue-btn:hover {
-      color: rgba(201, 169, 110, 0.9);
-      animation: none;
-    }
+    .continue-btn:hover { color: rgba(201, 169, 110, 0.9); animation: none; }
     .continue-btn .arrow {
       width: 22px; height: 1px;
       background: currentColor; position: relative;
@@ -1373,8 +257,1926 @@
       transform: rotate(-45deg);
     }
     .continue-btn:hover .arrow { width: 32px; }
-  `;
-  document.head.appendChild(btnStyle);
+
+    /* ═══════════════════════════════════════════════════════
+       ACT CONTAINER
+       ═══════════════════════════════════════════════════════ */
+    .act {
+      min-height: 100dvh;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 2;
+      padding: 80px 28px;
+    }
+    .act-inner {
+      max-width: 560px; width: 100%;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 0: NAME REVEAL (HERO)
+       ═══════════════════════════════════════════════════════ */
+    #ch0 {
+      flex-direction: column; text-align: center;
+      min-height: 100dvh; min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 40%, rgba(201, 169, 110, 0.03) 0%, transparent 60%);
+    }
+    #ch0 .ch0-pretitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 300;
+      letter-spacing: 8px; text-transform: uppercase;
+      color: var(--text-dim);
+      opacity: 0;
+    }
+    #ch0 .ch0-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(56px, 13vw, 120px);
+      font-weight: 400; line-height: 1;
+      opacity: 0;
+      margin: 20px 0 16px;
+    }
+    #ch0 .ch0-name em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold), var(--rose));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #ch0 .ch0-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 21px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      max-width: 320px; margin: 0 auto;
+      line-height: 1.7;
+      opacity: 0;
+    }
+    #ch0 .ch0-scroll {
+      margin-top: 56px; opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 1: HOW IT STARTED (Snapchat)
+       ═══════════════════════════════════════════════════════ */
+    #ch1 { flex-direction: column; text-align: center; }
+    #ch1 .ch1-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400; font-style: italic;
+      line-height: 1.35;
+      color: var(--text-primary);
+      opacity: 0;
+      margin-bottom: 20px;
+    }
+    #ch1 .ch1-quote em { color: var(--gold-soft); }
+    #ch1 .ch1-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      opacity: 0;
+    }
+    #ch1 .ch1-snap-icon {
+      width: 48px; height: 48px;
+      border: 1px solid rgba(201, 169, 110, 0.15);
+      border-radius: 14px;
+      margin: 36px auto;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      position: relative;
+    }
+    #ch1 .ch1-snap-icon::after {
+      content: '';
+      width: 16px; height: 16px;
+      border: 1.5px solid rgba(201, 169, 110, 0.3);
+      border-radius: 50%;
+      position: absolute;
+    }
+    #ch1 .ch1-snap-icon::before {
+      content: '';
+      width: 8px; height: 8px;
+      border: 1.5px solid rgba(201, 169, 110, 0.3);
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 2: THE FIRST THING I NOTICED
+       ═══════════════════════════════════════════════════════ */
+    #ch2 { justify-content: flex-start; padding-top: 100px; }
+    #ch2 .act-inner { text-align: left; max-width: 480px; }
+    #ch2 .ch2-eyebrow { opacity: 0; }
+    #ch2 .ch2-honest {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(19px, 3.2vw, 26px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #ch2 .ch2-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 6vw, 50px);
+      font-weight: 400; line-height: 1.15;
+      margin-bottom: 36px;
+      opacity: 0;
+    }
+    #ch2 .ch2-title em { font-style: italic; color: var(--gold-soft); }
+    #ch2 .ch2-but {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(18px, 3vw, 24px);
+      font-weight: 400; font-style: italic;
+      color: var(--text-primary);
+      line-height: 1.7;
+      margin-bottom: 44px;
+      opacity: 0;
+    }
+
+    /* Trait words — dramatic reveals */
+    .trait {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5.5vw, 44px);
+      font-weight: 400; line-height: 1.3;
+      padding: 18px 0;
+      border-top: 1px solid rgba(245, 240, 232, 0.05);
+      opacity: 0;
+      position: relative;
+      padding-left: 32px;
+    }
+    .trait:last-child { border-bottom: 1px solid rgba(245, 240, 232, 0.05); }
+    .trait::before {
+      content: '';
+      position: absolute; left: 0; top: 28px;
+      width: 14px; height: 1px;
+      background: var(--gold-soft);
+      opacity: 0.5;
+    }
+    .trait em { font-style: italic; color: var(--rose-soft); }
+    .trait .gold { color: var(--gold-soft); }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 3: HER DREAMS
+       Interactive floating dream cards
+       ═══════════════════════════════════════════════════════ */
+    #ch3 { flex-direction: column; padding: 100px 20px; min-height: auto; }
+    #ch3 .act-inner { max-width: 520px; text-align: center; }
+    #ch3 .ch3-eyebrow { opacity: 0; }
+    #ch3 .ch3-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 400; line-height: 1.25;
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #ch3 .ch3-title em { font-style: italic; color: var(--gold-soft); }
+    #ch3 .ch3-intro {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      opacity: 0;
+    }
+
+    /* Dream card */
+    .dream-card {
+      background: rgba(201, 169, 110, 0.03);
+      border: 1px solid rgba(201, 169, 110, 0.08);
+      border-radius: 2px;
+      padding: 32px 28px;
+      margin-bottom: 16px;
+      text-align: left;
+      opacity: 0;
+      transition: border-color 0.4s ease, background 0.4s ease;
+    }
+    .dream-card:hover {
+      border-color: rgba(201, 169, 110, 0.18);
+      background: rgba(201, 169, 110, 0.05);
+    }
+    .dream-card .dc-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+      display: block;
+      opacity: 0.7;
+    }
+    .dream-card .dc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(18px, 3vw, 22px);
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+    .dream-card .dc-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 2.3vw, 18px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+    .dream-card .dc-text em { color: var(--gold-soft); font-style: italic; }
+    .dream-card .dc-detail {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px; font-weight: 300;
+      color: var(--text-dim);
+      margin-top: 12px;
+      font-style: italic;
+      padding-left: 16px;
+      border-left: 1px solid rgba(201, 169, 110, 0.15);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 4: THE BRIDE
+       Fashion & styling section
+       ═══════════════════════════════════════════════════════ */
+    #ch4 { flex-direction: column; text-align: center; }
+    #ch4 .ch4-eyebrow { opacity: 0; }
+    #ch4 .ch4-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5.5vw, 44px);
+      font-weight: 400; line-height: 1.2;
+      margin-bottom: 24px;
+      opacity: 0;
+    }
+    #ch4 .ch4-title em { font-style: italic; color: var(--gold-soft); }
+    #ch4 .ch4-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 440px; margin: 0 auto 12px;
+      opacity: 0;
+    }
+    #ch4 .ch4-playful {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 2.2vw, 18px);
+      font-weight: 300; font-style: italic;
+      color: var(--rose-soft);
+      opacity: 0;
+      margin-top: 8px;
+    }
+    #ch4 .ch4-items {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 10px;
+      margin-top: 36px;
+      opacity: 0;
+    }
+    .ch4-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 300;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold-soft);
+      padding: 8px 16px;
+      border: 1px solid rgba(201, 169, 110, 0.1);
+      border-radius: 1px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 5: THE SAREE
+       Textile-inspired elegance
+       ═══════════════════════════════════════════════════════ */
+    #ch5 { flex-direction: column; text-align: center; }
+    #ch5 .ch5-pattern {
+      display: flex; justify-content: center; gap: 6px;
+      margin-bottom: 36px;
+      opacity: 0;
+    }
+    .ch5-pattern span {
+      width: 6px; height: 6px;
+      background: rgba(201, 169, 110, 0.15);
+      transform: rotate(45deg);
+    }
+    #ch5 .ch5-eyebrow { opacity: 0; }
+    #ch5 .ch5-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400; line-height: 1.2;
+      margin-bottom: 24px;
+      opacity: 0;
+    }
+    #ch5 .ch5-title em { font-style: italic; color: var(--gold-soft); }
+    #ch5 .ch5-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 440px; margin: 0 auto;
+      opacity: 0;
+    }
+    #ch5 .ch5-body em { color: var(--gold-soft); font-style: italic; }
+    #ch5 .ch5-weave {
+      width: 200px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+      margin: 36px auto 0;
+      opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 6: HER SISTER
+       The bonus character
+       ═══════════════════════════════════════════════════════ */
+    #ch6 { flex-direction: column; text-align: center; }
+    #ch6 .ch6-eyebrow { opacity: 0; }
+    #ch6 .ch6-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5.5vw, 44px);
+      font-weight: 400; line-height: 1.2;
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #ch6 .ch6-title em { font-style: italic; color: var(--gold-soft); }
+    #ch6 .ch6-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 440px; margin: 0 auto;
+      opacity: 0;
+    }
+    #ch6 .ch6-gifts {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 16px;
+      margin-top: 36px;
+      opacity: 0;
+    }
+    .ch6-gift {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px; font-weight: 300;
+      color: var(--text-secondary);
+      padding: 12px 20px;
+      border: 1px solid rgba(201, 169, 110, 0.08);
+      border-radius: 2px;
+    }
+    #ch6 .ch6-funny {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 2.2vw, 18px);
+      font-weight: 300; font-style: italic;
+      color: var(--rose-soft);
+      margin-top: 24px;
+      opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 7: THE HONEYMOON
+       Maldives — tropical transition
+       ═══════════════════════════════════════════════════════ */
+    #ch7 {
+      flex-direction: column; text-align: center;
+      min-height: 100dvh; min-height: 100vh;
+      background: linear-gradient(180deg, var(--bg-deep) 0%, #0a0d14 50%, #0c1018 100%);
+      overflow: hidden;
+    }
+    #ch7 .ocean-canvas {
+      position: absolute; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
+    #ch7 .ch7-content { position: relative; z-index: 2; }
+    #ch7 .ch7-eyebrow { opacity: 0; }
+    #ch7 .ch7-setup {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 12px;
+      opacity: 0;
+    }
+    #ch7 .ch7-youme {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400; font-style: italic;
+      color: var(--text-primary);
+      line-height: 1.4;
+      opacity: 0;
+      margin-bottom: 12px;
+    }
+    #ch7 .ch7-youme em { color: var(--gold-soft); }
+    #ch7 .ch7-deal {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(20px, 3.5vw, 28px);
+      font-weight: 300; font-style: italic;
+      color: var(--gold-soft);
+      opacity: 0;
+      margin-top: 8px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 8: THE LITTLE THINGS
+       Weekly dates — calendar concept
+       ═══════════════════════════════════════════════════════ */
+    #ch8 { flex-direction: column; text-align: center; }
+    #ch8 .ch8-eyebrow { opacity: 0; }
+    #ch8 .ch8-rule {
+      width: 1px; height: 40px;
+      background: linear-gradient(180deg, transparent, rgba(201,169,110,0.2), transparent);
+      margin: 0 auto 36px;
+      opacity: 0;
+    }
+    #ch8 .ch8-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400; line-height: 1.2;
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #ch8 .ch8-title em { font-style: italic; color: var(--gold-soft); }
+    #ch8 .ch8-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 420px; margin: 0 auto 36px;
+      opacity: 0;
+    }
+    /* Mini calendar grid */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      max-width: 280px;
+      margin: 0 auto;
+      opacity: 0;
+    }
+    .cal-cell {
+      aspect-ratio: 1;
+      border: 1px solid rgba(245, 240, 232, 0.04);
+      border-radius: 1px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 9px; font-weight: 200;
+      color: var(--text-dim);
+    }
+    .cal-cell.highlight {
+      background: rgba(201, 169, 110, 0.08);
+      border-color: rgba(201, 169, 110, 0.2);
+      color: var(--gold-soft);
+    }
+    .cal-cell.highlight::after {
+      content: '';
+      width: 3px; height: 3px;
+      background: var(--gold-soft);
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 9: BUT HERE'S WHAT I WANT
+       The promises — dark, intimate, powerful
+       ═══════════════════════════════════════════════════════ */
+    #ch9 { flex-direction: column; text-align: center; background: var(--bg-deep); }
+    #ch9 .ch9-eyebrow { opacity: 0; }
+    #ch9 .ch9-but {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 400; font-style: italic;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      opacity: 0;
+    }
+    #ch9 .ch9-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 400;
+      color: var(--text-primary);
+      opacity: 0;
+      margin-bottom: 32px;
+    }
+    #ch9 .ch9-name em { font-style: italic; color: var(--gold-soft); }
+
+    /* Promise list */
+    .promise {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(245, 240, 232, 0.03);
+      opacity: 0;
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .promise:last-child { border-bottom: none; }
+    .promise em { color: var(--gold-soft); font-style: italic; }
+
+    /* Financial maturity section */
+    #ch9 .ch9-money {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 2.2vw, 18px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-dim);
+      line-height: 1.7;
+      max-width: 400px;
+      margin: 32px auto 0;
+      opacity: 0;
+    }
+    #ch9 .ch9-money em { color: var(--gold-soft); }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 10: THE LIFE I IMAGINE
+       Visual montage of everyday moments
+       ═══════════════════════════════════════════════════════ */
+    #ch10 { flex-direction: column; text-align: center; }
+    #ch10 .ch10-eyebrow { opacity: 0; }
+    #ch10 .life-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 400px;
+      margin: 0 auto 40px;
+      opacity: 0;
+    }
+    .life-item {
+      padding: 20px 10px;
+      border: 1px solid rgba(201, 169, 110, 0.06);
+      border-radius: 2px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; font-weight: 300;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      transition: border-color 0.4s ease;
+    }
+    .life-item:hover { border-color: rgba(201, 169, 110, 0.15); }
+    .life-item .li-icon { font-size: 22px; display: block; margin-bottom: 8px; opacity: 0.6; }
+    #ch10 .ch10-big {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5.5vw, 46px);
+      font-weight: 400; line-height: 1.2;
+      opacity: 0;
+    }
+    #ch10 .ch10-big em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold), var(--rose));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 11: THE FINAL PROPOSAL
+       Everything stops. Letterbox. Cinematic.
+       ═══════════════════════════════════════════════════════ */
+    #ch11 {
+      min-height: 100dvh; min-height: 100vh;
+      background: var(--bg-deep);
+      position: relative;
+      overflow: hidden;
+    }
+    #ch11 .letter-top,
+    #ch11 .letter-bot {
+      position: absolute; left: 0; right: 0;
+      height: 0; background: #000; z-index: 5;
+      transition: height 1.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    #ch11 .letter-top { top: 0; }
+    #ch11 .letter-bot { bottom: 0; }
+    #ch11 .letterboxed .letter-top,
+    #ch11 .letterboxed .letter-bot { height: 7vh; }
+
+    #ch11 .ch11-vignette {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 15%, var(--bg-deep) 70%);
+      pointer-events: none; z-index: 2;
+    }
+    #ch11 .ch11-aura {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 500px; height: 500px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(201, 169, 110, 0.04) 0%, transparent 60%);
+      pointer-events: none; z-index: 1;
+      opacity: 0;
+    }
+    #ch11 .ch11-content {
+      position: relative; z-index: 3;
+      text-align: center;
+      padding: 0 20px;
+    }
+    #ch11 .ch11-your-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      opacity: 0;
+    }
+    #ch11 .ch11-rule {
+      width: 1px; height: 48px;
+      background: linear-gradient(180deg, transparent, var(--gold-soft), transparent);
+      margin: 0 auto 40px;
+      opacity: 0;
+    }
+    #ch11 .ch11-her-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(56px, 14vw, 130px);
+      font-weight: 400; line-height: 1;
+      background: linear-gradient(180deg, var(--text-primary) 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 40px;
+      opacity: 0;
+    }
+    #ch11 .ch11-question {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 400; font-style: italic;
+      color: var(--text-primary);
+      line-height: 1.35;
+      opacity: 0;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    #ch11 .ch11-pulse {
+      width: 160px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--rose-soft), transparent);
+      margin: 44px auto 0;
+      opacity: 0;
+      animation: pulseLine 1.6s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       YES / NO BUTTONS
+       ═══════════════════════════════════════════════════════ */
+    .choice-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 16px;
+      margin-top: 48px;
+      opacity: 0;
+    }
+    .btn-yes {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 6px; text-transform: uppercase;
+      color: var(--bg-deep);
+      background: linear-gradient(135deg, var(--gold), #d4b896);
+      border: none; cursor: pointer;
+      padding: 20px 56px;
+      transition: all 0.4s ease;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+    .btn-yes::after {
+      content: ''; position: absolute; inset: -5px;
+      border: 1px solid rgba(201, 169, 110, 0.12);
+      pointer-events: none;
+      transition: all 0.4s ease;
+    }
+    .btn-yes:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(201, 169, 110, 0.2);
+    }
+    .btn-yes:hover::after { inset: -9px; border-color: rgba(201, 169, 110, 0.2); }
+    .btn-yes:active { transform: scale(0.97); }
+
+    .btn-think {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px; font-weight: 300; font-style: italic;
+      color: var(--text-dim);
+      background: none; border: none; cursor: pointer;
+      padding: 12px;
+      transition: color 0.4s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-think:hover { color: var(--text-secondary); }
+
+    /* Think modal */
+    .think-modal {
+      position: fixed; inset: 0; z-index: 6000;
+      background: rgba(6, 5, 10, 0.95);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 40px 28px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    .think-modal.show { opacity: 1; pointer-events: all; }
+    .think-modal .tm-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(17px, 2.8vw, 22px);
+      font-weight: 300; line-height: 1.8;
+      color: var(--text-secondary);
+      max-width: 380px;
+      opacity: 0;
+    }
+    .think-modal .tm-text em { color: var(--gold-soft); font-style: italic; }
+    .think-modal .tm-close {
+      margin-top: 40px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 300;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--gold-soft);
+      background: none; border: 1px solid rgba(201, 169, 110, 0.2);
+      padding: 14px 36px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      opacity: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .think-modal .tm-close:hover { background: rgba(201, 169, 110, 0.08); }
+
+    /* ═══════════════════════════════════════════════════════
+       CHAPTER 12: YES CELEBRATION
+       A completely different world. Warm. Alive.
+       ═══════════════════════════════════════════════════════ */
+    #ch12 {
+      display: none;
+      min-height: 100dvh; min-height: 100vh;
+      background: var(--bg-mid);
+      position: relative;
+      overflow: hidden;
+    }
+    #ch12 .ch12-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+    #ch12 .ch12-aura {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(201, 169, 110, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      animation: auraPulse 5s ease-in-out infinite;
+    }
+    @keyframes auraPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    #ch12 .ch12-inner {
+      position: relative; z-index: 2;
+      text-align: center;
+      padding: 0 28px;
+    }
+    #ch12 .ch12-eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(14px, 2.2vw, 17px);
+      font-weight: 300; font-style: italic;
+      color: var(--rose-soft);
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #ch12 .ch12-word {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(64px, 16vw, 180px);
+      font-weight: 400; line-height: 0.9;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--rose) 50%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      letter-spacing: -3px;
+    }
+    #ch12 .ch12-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(17px, 2.8vw, 22px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 400px;
+      margin: 28px auto 0;
+      opacity: 0;
+    }
+    #ch12 .ch12-sig {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(15px, 2.2vw, 19px);
+      font-weight: 400; font-style: italic;
+      color: var(--gold-soft);
+      margin-top: 56px;
+      opacity: 0;
+    }
+    #ch12 .ch12-ring {
+      width: 72px; height: 72px;
+      border: 1px solid rgba(201, 169, 110, 0.12);
+      border-radius: 50%;
+      margin: 44px auto 0;
+      position: relative;
+      opacity: 0;
+    }
+    #ch12 .ch12-ring::before {
+      content: ''; position: absolute; inset: 6px;
+      border-radius: 50%;
+      border: 1px solid rgba(201, 169, 110, 0.06);
+    }
+    #ch12 .ch12-ring::after {
+      content: ''; position: absolute;
+      top: 50%; left: 50%;
+      width: 6px; height: 6px;
+      background: rgba(201, 169, 110, 0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FLOATING PETALS (YES celebration)
+       ═══════════════════════════════════════════════════════ */
+    .petal {
+      position: fixed; pointer-events: none; z-index: 5;
+      border-radius: 50% 0 50% 0;
+      opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .act { padding: 60px 20px; }
+      #ch2 { padding-top: 80px; }
+      .trait { padding-left: 24px; }
+      .dream-card { padding: 24px 20px; }
+      .life-grid { gap: 8px; }
+      .life-item { padding: 16px 8px; font-size: 12px; }
+      .btn-yes { padding: 18px 44px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Grain -->
+  <div class="grain"></div>
+
+  <!-- Fireflies -->
+  <canvas id="fireflies"></canvas>
+
+  <!-- Progress -->
+  <div class="progress-rail" id="progressRail">
+    <div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div>
+    <div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div>
+    <div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div>
+    <div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div>
+  </div>
+
+  <!-- Music -->
+  <button class="music-btn" id="musicBtn" title="Music">
+    <div class="music-bars">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </button>
+
+  <!-- ═══════════════════════════════════════════════
+       LOADER
+       ═══════════════════════════════════════════════ -->
+  <div id="loader">
+    <div class="loader-msg">for someone special</div>
+    <div class="loader-bar"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       NAME REVEAL OVERLAY
+       ═══════════════════════════════════════════════ -->
+  <div id="nameReveal">
+    <div class="nr-text">Before we begin&hellip;<br>There is one person<br>this entire story was made for.</div>
+    <div class="nr-name" id="nrDisplay">&nbsp;</div>
+    <div class="nr-heart">&#10084;</div>
+    <div class="nr-input-wrap">
+      <input class="nr-input" id="nrInput" type="text" placeholder="What's your name?" maxlength="30" autocomplete="off" />
+      <button class="nr-btn" id="nrBtn" disabled>Begin</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 0: OPENING — HER NAME
+       ═══════════════════════════════════════════════ -->
+  <section id="ch0" class="act">
+    <div style="text-align:center;">
+      <div class="ch0-pretitle">a letter for</div>
+      <h1 class="ch0-name" id="herName">N<em>ikita</em></h1>
+      <p class="ch0-sub">from the one who can't stop thinking about you</p>
+      <div class="ch0-scroll">
+        <button class="continue-btn" onclick="goTo(1)">
+          begin
+          <span class="arrow"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 1: HOW IT STARTED
+       ═══════════════════════════════════════════════ -->
+  <section id="ch1" class="act">
+    <div class="act-inner" style="text-align:center; max-width:520px;">
+      <div class="ch1-quote">
+        Every beautiful story<br>has an <em>unexpected</em> beginning.
+      </div>
+      <div class="ch1-snap-icon"></div>
+      <div class="ch1-line">
+        Ours started with something<br>as simple as a Snapchat.
+      </div>
+      <div class="ch1-line" style="margin-top: 28px;">
+        One snap.<br>
+        One conversation.<br>
+        And somehow&hellip;<br>
+        <span style="color: rgba(201,169,110,0.7);">I met someone I couldn't stop noticing.</span>
+      </div>
+      <button class="continue-btn" onclick="goTo(2)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 2: THE FIRST THING I NOTICED
+       ═══════════════════════════════════════════════ -->
+  <section id="ch2" class="act">
+    <div class="act-inner">
+      <span class="eyebrow ch2-eyebrow">chapter one</span>
+      <div class="ch2-honest">I'll be honest&hellip;</div>
+      <h2 class="ch2-title">
+        The first thing I noticed<br>was how <em>beautiful</em> you are.
+      </h2>
+      <div class="ch2-but">
+        But that wasn't what made me stay.
+      </div>
+
+      <div class="trait">
+        <span class="gold">Calm.</span>
+      </div>
+      <div class="trait">
+        <span class="gold">Decent.</span>
+      </div>
+      <div class="trait">
+        <em>Beautiful</em> inside and out.
+      </div>
+      <div class="trait">
+        <em>Graceful.</em>
+      </div>
+      <div class="trait">
+        Full of <span class="gold">dreams.</span>
+      </div>
+      <div class="trait">
+        And somehow&hellip; <em>very easy to admire.</em>
+      </div>
+
+      <button class="continue-btn" onclick="goTo(3)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 3: HER DREAMS
+       ═══════════════════════════════════════════════ -->
+  <section id="ch3" class="act">
+    <div class="act-inner">
+      <span class="eyebrow ch3-eyebrow">chapter two</span>
+      <h2 class="ch3-title">
+        And then I discovered<br>your <em>dreams</em>
+      </h2>
+      <div class="ch3-intro">
+        You don't just dream about a wedding.<br>
+        You dream about a <span style="color: rgba(201,169,110,0.7);">LIFE.</span>
+      </div>
+
+      <div class="dream-card">
+        <span class="dc-icon">&#128142;</span>
+        <div class="dc-title">The Engagement</div>
+        <div class="dc-text">
+          A ring that isn't just diamond&hellip;<br>
+          but a reminder that <em>someone chose you for forever.</em>
+        </div>
+        <div class="dc-detail">A symbol. Not just a price tag.</div>
+      </div>
+
+      <div class="dream-card">
+        <span class="dc-icon">&#128247;</span>
+        <div class="dc-title">The Memories</div>
+        <div class="dc-text">
+          Cinematic videography. Beautiful photography.<br>
+          Moments captured so you can <em>relive them forever.</em>
+        </div>
+        <div class="dc-detail">Because some memories deserve more than a camera roll.</div>
+      </div>
+
+      <div class="dream-card">
+        <span class="dc-icon">&#127881;</span>
+        <div class="dc-title">The Wedding</div>
+        <div class="dc-text">
+          A home wedding. Full traditional Barati.<br>
+          Cultural rituals. Beautiful bridal moments.<br>
+          <em>Everyone we love, in one place.</em>
+        </div>
+        <div class="dc-detail">Not just a wedding. A celebration.</div>
+      </div>
+
+      <button class="continue-btn" onclick="goTo(4)" style="margin-top: 40px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 4: THE BRIDE
+       ═══════════════════════════════════════════════ -->
+  <section id="ch4" class="act">
+    <div class="act-inner" style="text-align:center; max-width:500px;">
+      <span class="eyebrow ch4-eyebrow">chapter three</span>
+      <h2 class="ch4-title">
+        The <em>bride</em> you've always imagined
+      </h2>
+      <div class="ch4-body">
+        You deserve to feel like the most beautiful version of yourself<br>
+        on the day you've imagined for so long.
+      </div>
+      <div class="ch4-body" style="margin-top: 16px;">
+        The perfect makeup. The styling. The accessories.<br>
+        Everything that makes you feel like <em>her.</em>
+      </div>
+      <div class="ch4-playful">
+        And yes&hellip; I'll pretend I understand why one bag is different from another. &#128021;
+      </div>
+      <div class="ch4-items">
+        <span class="ch4-tag">Makeup</span>
+        <span class="ch4-tag">Bridal Styling</span>
+        <span class="ch4-tag">Accessories</span>
+        <span class="ch4-tag">The Look</span>
+      </div>
+      <button class="continue-btn" onclick="goTo(5)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 5: THE SAREE
+       ═══════════════════════════════════════════════ -->
+  <section id="ch5" class="act">
+    <div class="act-inner" style="text-align:center; max-width:480px;">
+      <div class="ch5-pattern">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+      <span class="eyebrow ch5-eyebrow">chapter four</span>
+      <h2 class="ch5-title">
+        A <em>Sambalpuri</em> Saree
+      </h2>
+      <div class="ch5-body">
+        And somewhere between all the bridal glamour&hellip;<br><br>
+        There has to be a beautiful Sambalpuri saree.<br><br>
+        Because traditions are more beautiful<br>
+        when they become <em>memories.</em>
+      </div>
+      <div class="ch5-weave"></div>
+      <button class="continue-btn" onclick="goTo(6)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 6: HER SISTER
+       ═══════════════════════════════════════════════ -->
+  <section id="ch6" class="act">
+    <div class="act-inner" style="text-align:center; max-width:480px;">
+      <span class="eyebrow ch6-eyebrow">chapter five</span>
+      <h2 class="ch6-title">
+        The <em>bonus</em> character
+      </h2>
+      <div class="ch6-body">
+        And because the people you love<br>become important to me too&hellip;<br><br>
+        Your sister gets <em>spoiled</em> too.
+      </div>
+      <div class="ch6-gifts">
+        <div class="ch6-gift">&#128241; An iPhone</div>
+        <div class="ch6-gift">&#128142; Beautiful earrings</div>
+        <div class="ch6-gift">&#127881; Special gifts</div>
+      </div>
+      <div class="ch6-funny">
+        Yes, I've already realized marrying you<br>comes with a very important bonus character.<br>
+        Your sister. &#10084;
+      </div>
+      <button class="continue-btn" onclick="goTo(7)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 7: THE HONEYMOON
+       ═══════════════════════════════════════════════ -->
+  <section id="ch7" class="act">
+    <canvas class="ocean-canvas" id="oceanCanvas"></canvas>
+    <div class="ch7-content act-inner" style="text-align:center; max-width:480px;">
+      <span class="eyebrow ch7-eyebrow">chapter six</span>
+      <div class="ch7-setup">
+        After all the chaos&hellip;<br>
+        The cameras.<br>
+        The dancing.<br>
+        The relatives.<br>
+        The endless food.
+      </div>
+      <div class="ch7-youme">
+        Just <em>you</em>.<br>
+        Me.<br>
+        And the <em>Maldives</em>.
+      </div>
+      <div class="ch7-deal">Deal? &#127754;</div>
+      <button class="continue-btn" onclick="goTo(8)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 8: THE LITTLE THINGS
+       ═══════════════════════════════════════════════ -->
+  <section id="ch8" class="act">
+    <div class="act-inner" style="text-align:center; max-width:420px;">
+      <span class="eyebrow ch8-eyebrow">chapter seven</span>
+      <div class="ch8-rule"></div>
+      <h2 class="ch8-title">
+        Your <em>simple</em> rule
+      </h2>
+      <div class="ch8-body">
+        Take me out once a week.<br><br>
+        A coffee date.<br>
+        Dinner.<br>
+        A random drive.<br>
+        A movie.<br>
+        Or just getting lost somewhere together.
+      </div>
+      <div class="ch8-body" style="font-style: italic; color: rgba(201,169,110,0.6);">
+        Because I don't want us to stop dating<br>just because we got married.
+      </div>
+
+      <!-- Mini calendar -->
+      <div class="cal-grid" id="calGrid"></div>
+
+      <button class="continue-btn" onclick="goTo(9)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 9: BUT HERE'S WHAT I WANT
+       The promises
+       ═══════════════════════════════════════════════ -->
+  <section id="ch9" class="act">
+    <div class="act-inner" style="text-align:center; max-width:440px;">
+      <span class="eyebrow ch9-eyebrow">chapter eight</span>
+      <div class="ch9-but">But Nikita&hellip;</div>
+      <div class="ch9-name">
+        I don't want to promise you<br>a <em>perfect</em> life.
+      </div>
+
+      <div class="promise">I'll keep <em>choosing</em> you.</div>
+      <div class="promise">I'll listen to your dreams.</div>
+      <div class="promise">I'll respect your individuality.</div>
+      <div class="promise">I'll celebrate your wins.</div>
+      <div class="promise">I'll stand beside you when life gets hard.</div>
+      <div class="promise">I'll make ordinary days feel special.</div>
+      <div class="promise">I'll keep taking you on dates.</div>
+      <div class="promise">I'll laugh with you. And at you.</div>
+      <div class="promise">I'll protect our peace.</div>
+
+      <div class="ch9-money">
+        I may not give you everything on day one.<br>
+        But I want to build a life where we can<br>
+        <em>chase those dreams together.</em><br><br>
+        Because your dreams shouldn't scare me.<br>
+        They should <em>inspire</em> me.
+      </div>
+
+      <button class="continue-btn" onclick="goTo(10)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 10: THE LIFE I IMAGINE
+       ═══════════════════════════════════════════════ -->
+  <section id="ch10" class="act">
+    <div class="act-inner" style="text-align:center; max-width:500px;">
+      <span class="eyebrow ch10-eyebrow">chapter nine</span>
+      <div class="life-grid">
+        <div class="life-item"><span class="li-icon">&#127968;</span>Home</div>
+        <div class="life-item"><span class="li-icon">&#9749;</span>Coffee</div>
+        <div class="life-item"><span class="li-icon">&#127909;</span>Drives</div>
+        <div class="life-item"><span class="li-icon">&#127871;</span>Movie nights</div>
+        <div class="life-item"><span class="li-icon">&#128225;</span>Weekly dates</div>
+        <div class="life-item"><span class="li-icon">&#9992;</span>Travel</div>
+        <div class="life-item"><span class="li-icon">&#128247;</span>Photos</div>
+        <div class="life-item"><span class="li-icon">&#127874;</span>Birthdays</div>
+        <div class="life-item"><span class="li-icon">&#127876;</span>Festivals</div>
+      </div>
+      <div class="ch10-big" style="margin-top: 20px;">
+        I don't just want a wedding with you.<br><br>
+        I want a <em>life</em> with you.
+      </div>
+      <button class="continue-btn" onclick="goTo(11)" style="margin-top: 48px;">
+        I'm ready
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 11: THE PROPOSAL
+       ═══════════════════════════════════════════════ -->
+  <section id="ch11" class="act">
+    <div class="letter-top"></div>
+    <div class="letter-bot"></div>
+    <div class="ch11-vignette"></div>
+    <div class="ch11-aura"></div>
+    <div class="ch11-content">
+      <div class="ch11-your-name">Nikita&hellip;</div>
+      <div class="ch11-rule"></div>
+      <div class="ch11-her-name">Nikita</div>
+      <div class="ch11-question">Will you marry me?</div>
+      <div class="ch11-pulse"></div>
+      <div class="choice-wrap">
+        <button class="btn-yes" onclick="sayYes()">Yes</button>
+        <button class="btn-think" onclick="showThink()">I need to think</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       THINK MODAL
+       ═══════════════════════════════════════════════ -->
+  <div class="think-modal" id="thinkModal">
+    <div class="tm-text">
+      Take all the time you need.<br><br>
+      A yes means something only when<br>it comes from your heart.<br><br>
+      <em>I'll be right here.</em>
+    </div>
+    <button class="tm-close" onclick="closeThink()">I understand</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       CHAPTER 12: YES
+       ═══════════════════════════════════════════════ -->
+  <section id="ch12">
+    <canvas class="ch12-canvas" id="yesCanvas"></canvas>
+    <div class="ch12-aura"></div>
+    <div class="ch12-inner">
+      <div class="ch12-eyebrow">she said</div>
+      <div class="ch12-word">YES</div>
+      <div class="ch12-line">
+        I knew this page was going to have<br>a happy ending&hellip;<br><br>
+        Now the real story begins.
+      </div>
+      <div class="ch12-sig">forever yours</div>
+      <div class="ch12-ring"></div>
+    </div>
+  </section>
+
+  <script>
+  /* ═══════════════════════════════════════════════════════
+     CONFIGURATION — edit this section easily
+     ═══════════════════════════════════════════════════════ */
+  const CONFIG = {
+    HER_NAME: 'Nikita',
+    MY_NAME: 'Piku',
+    TAGLINE: 'from the one who can\'t stop thinking about you',
+  };
+
+  /* ═══════════════════════════════════════════════════════
+     STATE
+     ═══════════════════════════════════════════════════════ */
+  let currentAct = 0;
+  let letterboxed = false;
+  let petals = null;
+  let nameRevealed = false;
+  let musicPlaying = false;
+
+  /* ═══════════════════════════════════════════════════════
+     NAME REVEAL
+     ═══════════════════════════════════════════════════════ */
+  const nrInput = document.getElementById('nrInput');
+  const nrBtn = document.getElementById('nrBtn');
+  const nrDisplay = document.getElementById('nrDisplay');
+  const nameReveal = document.getElementById('nameReveal');
+
+  nrInput.addEventListener('input', () => {
+    nrBtn.disabled = nrInput.value.trim().length < 1;
+  });
+  nrInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !nrBtn.disabled) revealName();
+  });
+  nrBtn.addEventListener('click', revealName);
+
+  function revealName() {
+    const name = nrInput.value.trim();
+    if (!name) return;
+    CONFIG.HER_NAME = name;
+
+    // Update display
+    nrDisplay.innerHTML = name + ' &#10084;';
+    document.getElementById('herName').innerHTML = name.charAt(0).toUpperCase() + name.slice(1).charAt(1) ? '<em>' + name.charAt(1) + '</em>' + name.slice(2) : '<em>' + name + '</em>';
+
+    // Animate out the input, reveal the page
+    const tl = gsap.timeline({
+      onComplete() {
+        nameReveal.classList.remove('active');
+        document.body.style.overflow = '';
+        nameRevealed = true;
+      }
+    });
+    tl.to('#nameReveal .nr-input-wrap', { opacity: 0, y: 10, duration: 0.4 }, 0);
+    tl.to('#nameReveal .nr-input', { opacity: 0, duration: 0.3 }, 0);
+    tl.to('#nameReveal .nr-btn', { opacity: 0, duration: 0.3 }, 0);
+    tl.to('#nameReveal .nr-text', { opacity: 0, duration: 0.5 }, 0);
+    tl.to('#nameReveal .nr-heart', { opacity: 0, duration: 0.4 }, 0);
+    tl.to('#nameReveal .nr-name', { opacity: 0, duration: 0.4 }, 0);
+    tl.to(nameReveal, { opacity: 0, duration: 0.8, ease: 'power2.inOut' }, 0.5);
+    tl.set(nameReveal, { display: 'none' });
+
+    // Trigger chapter 0
+    setTimeout(() => animateCh(0), 300);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     FIREFLY SYSTEM
+     ═══════════════════════════════════════════════════════ */
+  ;(function() {
+    const canvas = document.getElementById('fireflies');
+    const ctx = canvas.getContext('2d');
+    let W, H, flies = [];
+    let proposalActive = false;
+    let yesMode = false;
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Fly {
+      constructor(scatter) { this.init(scatter); }
+      init(scatter) {
+        this.x = Math.random() * W;
+        this.y = scatter ? Math.random() * H : (Math.random() < 0.5 ? -10 : H + 10);
+        this.r = Math.random() * 1.3 + 0.3;
+        this.vx = (Math.random() - 0.5) * 0.22;
+        this.vy = (Math.random() - 0.5) * 0.22;
+        this.phase = Math.random() * Math.PI * 2;
+        this.phaseSpeed = (Math.random() - 0.5) * 0.014;
+        this.drift = Math.random() * 0.35 + 0.08;
+        this.alpha = Math.random() * 0.3 + 0.04;
+        this.alphaSpeed = (Math.random() - 0.5) * 0.004;
+        this.maxAlpha = this.alpha;
+      }
+      update() {
+        const slow = proposalActive ? 0.2 : 1;
+        this.phase += this.phaseSpeed;
+        this.x += this.vx * slow + Math.sin(this.phase) * this.drift * 0.25;
+        this.y += this.vy * slow + Math.cos(this.phase) * this.drift * 0.15;
+        this.alpha += this.alphaSpeed;
+        const cap = proposalActive ? 0.08 : this.maxAlpha;
+        if (this.alpha > cap) { this.alpha = cap; this.alphaSpeed = -Math.abs(this.alphaSpeed); }
+        if (this.alpha < 0.01) { this.alpha = 0.01; this.alphaSpeed = Math.abs(this.alphaSpeed); }
+        if (this.x < -30 || this.x > W + 30 || this.y < -30 || this.y > H + 30) this.init(false);
+      }
+      draw() {
+        const a = yesMode ? Math.min(this.alpha * 1.6, 0.55) : (proposalActive ? this.alpha * 0.4 : this.alpha);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        if (yesMode) {
+          ctx.fillStyle = Math.random() > 0.5
+            ? `rgba(232,180,184,${a})`
+            : `rgba(201,169,110,${a})`;
+        } else if (proposalActive) {
+          ctx.fillStyle = `rgba(170,150,130,${a})`;
+        } else {
+          ctx.fillStyle = `rgba(185,165,135,${a})`;
+        }
+        ctx.fill();
+        // Halo
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = yesMode ? `rgba(232,180,184,${a * 0.06})` : `rgba(185,165,135,${a * 0.05})`;
+        ctx.fill();
+      }
+    }
+
+    const n = Math.min(Math.floor((W * H) / 18000), 65);
+    for (let i = 0; i < n; i++) flies.push(new Fly(true));
+
+    (function loop() {
+      ctx.clearRect(0, 0, W, H);
+      flies.forEach(f => { f.update(); f.draw(); });
+      requestAnimationFrame(loop);
+    })();
+
+    window._setProposal = v => proposalActive = v;
+    window._setYes = v => yesMode = v;
+  })();
+
+  /* ═══════════════════════════════════════════════════════
+     PETAL SYSTEM (YES celebration)
+     ═══════════════════════════════════════════════════════ */
+  class Petals {
+    constructor(canvas) {
+      this.c = canvas;
+      this.ctx = canvas.getContext('2d');
+      this.petals = [];
+      this.on = false;
+      this.resize();
+    }
+    resize() {
+      this.c.width = window.innerWidth;
+      this.c.height = window.innerHeight;
+    }
+    spawn(n) {
+      const W = this.c.width;
+      const cols = ['201,169,110','232,180,184','220,195,170','210,185,165','240,225,210'];
+      for (let i = 0; i < n; i++) {
+        this.petals.push({
+          x: Math.random() * W,
+          y: -20 - Math.random() * 300,
+          s: Math.random() * 6 + 3,
+          c: cols[Math.floor(Math.random() * cols.length)],
+          a: Math.random() * 0.4 + 0.15,
+          r: Math.random() * 360,
+          rv: (Math.random() - 0.5) * 2,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: Math.random() * 1 + 0.3,
+          sw: Math.random() * 1.2 + 0.4,
+          ss: Math.random() * 0.014 + 0.007,
+          so: Math.random() * Math.PI * 2,
+          life: 1,
+          dec: 0.0005 + Math.random() * 0.0003
+        });
+      }
+    }
+    start() {
+      if (this.on) return;
+      this.on = true;
+      this.resize();
+      this.spawn(140);
+      this._t = setInterval(() => { if (this.petals.length < 220) this.spawn(10); }, 500);
+      this.draw();
+    }
+    stop() {
+      this.on = false;
+      clearInterval(this._t);
+      cancelAnimationFrame(this._raf);
+      this.petals = [];
+    }
+    draw() {
+      if (!this.on) return;
+      const ctx = this.ctx, W = this.c.width, H = this.c.height;
+      ctx.clearRect(0, 0, W, H);
+      const t = performance.now() * 0.001;
+      this.petals = this.petals.filter(p => {
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(t + p.so) * p.sw;
+        p.r += p.rv;
+        p.life -= p.dec;
+        if (p.life <= 0 || p.y > H + 40) return false;
+        const a = p.a * p.life;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.r * Math.PI / 180);
+        ctx.fillStyle = `rgba(${p.c},${a})`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.s, p.s * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        return true;
+      });
+      this._raf = requestAnimationFrame(() => this.draw());
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     OCEAN CANVAS (honeymoon chapter)
+     ═══════════════════════════════════════════════════════ */
+  function initOcean() {
+    const canvas = document.getElementById('oceanCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    function resize() {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let t = 0;
+    (function draw() {
+      if (!document.getElementById('ch7')) return;
+      ctx.clearRect(0, 0, W, H);
+      t += 0.008;
+
+      // Stars
+      for (let i = 0; i < 40; i++) {
+        const sx = (Math.sin(i * 73.7) * 0.5 + 0.5) * W;
+        const sy = (Math.cos(i * 41.3) * 0.5 + 0.5) * H * 0.5;
+        const sa = 0.15 + Math.sin(t + i) * 0.1;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(245,240,232,${sa})`;
+        ctx.fill();
+      }
+
+      // Moon
+      ctx.beginPath();
+      ctx.arc(W * 0.75, H * 0.2, 25, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(245,240,232,0.04)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(W * 0.75, H * 0.2, 40, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(245,240,232,0.015)';
+      ctx.fill();
+
+      // Ocean waves
+      for (let w = 0; w < 3; w++) {
+        ctx.beginPath();
+        const baseY = H * (0.65 + w * 0.1);
+        ctx.moveTo(0, baseY);
+        for (let x = 0; x <= W; x += 4) {
+          const y = baseY + Math.sin(x * 0.008 + t * (1 + w * 0.3)) * (6 + w * 3)
+            + Math.sin(x * 0.015 + t * 0.7) * 3;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(15,25,45,${0.3 - w * 0.08})`;
+        ctx.fill();
+      }
+
+      requestAnimationFrame(draw);
+    })();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CALENDAR GRID
+     ═══════════════════════════════════════════════════════ */
+  function buildCalendar() {
+    const grid = document.getElementById('calGrid');
+    if (!grid) return;
+    const days = ['S','M','T','W','T','F','S'];
+    // Day headers
+    days.forEach(d => {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      cell.textContent = d;
+      cell.style.color = 'rgba(201,169,110,0.3)';
+      cell.style.fontSize = '8px';
+      grid.appendChild(cell);
+    });
+    // Empty cells for offset
+    for (let i = 0; i < 3; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      grid.appendChild(cell);
+    }
+    // Days with one highlighted (the date)
+    for (let i = 1; i <= 28; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (i === 14 ? ' highlight' : '');
+      cell.textContent = i;
+      grid.appendChild(cell);
+    }
+  }
+  buildCalendar();
+
+  /* ═══════════════════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════════════════ */
+  function goTo(num) {
+    const el = document.getElementById('ch' + num);
+    if (!el) return;
+    if (num === 11) window._setProposal(true);
+    if (num === 0) window._setProposal(false);
+
+    currentAct = num;
+    updateProgress(num);
+    showProgress();
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => animateCh(num), 400);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ANIMATION TIMELINES
+     ═══════════════════════════════════════════════════════ */
+  const ANIMS = {};
+
+  ANIMS[0] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch0 .ch0-pretitle', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0);
+    tl.to('#ch0 .ch0-name', { opacity: 1, y: 0, duration: 1.6, ease: 'power3.out' }, 0.4);
+    tl.to('#ch0 .ch0-sub', { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' }, 1.2);
+    tl.to('#ch0 .ch0-scroll', { opacity: 1, duration: 0.8 }, 2);
+  };
+
+  ANIMS[1] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch1 .ch1-quote', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0);
+    tl.to('#ch1 .ch1-snap-icon', { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.7)' }, 0.8);
+    tl.to('#ch1 .ch1-line', { opacity: 1, y: 0, duration: 1, stagger: 0.2, ease: 'power2.out' }, 1);
+    tl.from('#ch1 .continue-btn', { opacity: 0, duration: 0.8 }, 2);
+  };
+
+  ANIMS[2] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch2 .ch2-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch2 .ch2-honest', { opacity: 1, duration: 1, ease: 'power2.out' }, 0.2);
+    tl.to('#ch2 .ch2-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0.6);
+    tl.to('#ch2 .ch2-but', { opacity: 1, duration: 1, ease: 'power2.out' }, 1.2);
+    tl.to('#ch2 .trait', { opacity: 1, x: 0, duration: 0.8, stagger: 0.12, ease: 'power2.out' }, 1.6);
+    tl.from('#ch2 .continue-btn', { opacity: 0, duration: 0.8 }, 3);
+  };
+
+  ANIMS[3] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch3 .ch3-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch3 .ch3-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
+    tl.to('#ch3 .ch3-intro', { opacity: 1, duration: 1, ease: 'power2.out' }, 0.6);
+    tl.to('#ch3 .dream-card', { opacity: 1, y: 0, duration: 0.9, stagger: 0.15, ease: 'power2.out' }, 1);
+    tl.from('#ch3 .continue-btn', { opacity: 0, duration: 0.8 }, 2.8);
+  };
+
+  ANIMS[4] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch4 .ch4-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch4 .ch4-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0.2);
+    tl.to('#ch4 .ch4-body', { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: 'power2.out' }, 0.7);
+    tl.to('#ch4 .ch4-playful', { opacity: 1, duration: 1, ease: 'power2.out' }, 1.5);
+    tl.to('#ch4 .ch4-items', { opacity: 1, duration: 0.8 }, 2);
+    tl.from('#ch4 .continue-btn', { opacity: 0, duration: 0.8 }, 2.5);
+  };
+
+  ANIMS[5] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch5 .ch5-pattern', { opacity: 1, duration: 0.8 }, 0);
+    tl.to('#ch5 .ch5-eyebrow', { opacity: 1, duration: 0.6 }, 0.3);
+    tl.to('#ch5 .ch5-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0.5);
+    tl.to('#ch5 .ch5-body', { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' }, 1.2);
+    tl.to('#ch5 .ch5-weave', { opacity: 1, scaleX: 1, duration: 0.8, ease: 'power2.inOut' }, 2);
+    tl.from('#ch5 .continue-btn', { opacity: 0, duration: 0.8 }, 2.5);
+  };
+
+  ANIMS[6] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch6 .ch6-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch6 .ch6-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0.2);
+    tl.to('#ch6 .ch6-body', { opacity: 1, y: 0, duration: 1, ease: 'power2.out' }, 0.8);
+    tl.to('#ch6 .ch6-gifts', { opacity: 1, duration: 0.8 }, 1.5);
+    tl.to('#ch6 .ch6-funny', { opacity: 1, duration: 1, ease: 'power2.out' }, 1.8);
+    tl.from('#ch6 .continue-btn', { opacity: 0, duration: 0.8 }, 2.5);
+  };
+
+  ANIMS[7] = () => {
+    initOcean();
+    const tl = gsap.timeline();
+    tl.to('#ch7 .ch7-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch7 .ch7-setup', { opacity: 1, y: 0, duration: 1, stagger: 0.12, ease: 'power2.out' }, 0.3);
+    tl.to('#ch7 .ch7-youme', { opacity: 1, duration: 1.2, ease: 'power3.out' }, 1.8);
+    tl.to('#ch7 .ch7-deal', { opacity: 1, duration: 1, ease: 'power2.out' }, 2.8);
+    tl.from('#ch7 .continue-btn', { opacity: 0, duration: 0.8 }, 3.3);
+  };
+
+  ANIMS[8] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch8 .ch8-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch8 .ch8-rule', { opacity: 1, scaleY: 1, duration: 0.8, ease: 'power2.inOut' }, 0.2);
+    tl.to('#ch8 .ch8-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0.5);
+    tl.to('#ch8 .ch8-body', { opacity: 1, y: 0, duration: 1, stagger: 0.1, ease: 'power2.out' }, 1.1);
+    tl.to('#ch8 .cal-grid', { opacity: 1, duration: 0.8 }, 2.2);
+    tl.from('#ch8 .continue-btn', { opacity: 0, duration: 0.8 }, 2.8);
+  };
+
+  ANIMS[9] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch9 .ch9-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch9 .ch9-but', { opacity: 1, duration: 1.2, ease: 'power2.out' }, 0.3);
+    tl.to('#ch9 .ch9-name', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 1);
+    tl.to('#ch9 .promise', { opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'power2.out' }, 1.8);
+    tl.to('#ch9 .ch9-money', { opacity: 1, duration: 1.2, ease: 'power2.out' }, 3.8);
+    tl.from('#ch9 .continue-btn', { opacity: 0, duration: 0.8 }, 4.8);
+  };
+
+  ANIMS[10] = () => {
+    const tl = gsap.timeline();
+    tl.to('#ch10 .ch10-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#ch10 .life-grid', { opacity: 1, duration: 0.8 }, 0.3);
+    tl.to('#ch10 .life-item', { opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out' }, 0.5);
+    tl.to('#ch10 .ch10-big', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 1.5);
+    tl.from('#ch10 .continue-btn', { opacity: 0, duration: 0.8 }, 2.8);
+  };
+
+  ANIMS[11] = () => {
+    if (letterboxed) return;
+    letterboxed = true;
+    document.getElementById('ch11').classList.add('letterboxed');
+
+    const tl = gsap.timeline();
+    tl.to('#ch11 .ch11-your-name', { opacity: 1, duration: 1.5, ease: 'power2.out' }, 0);
+    tl.to('#ch11 .ch11-rule', { opacity: 1, scaleY: 1, duration: 1, ease: 'power2.inOut' }, 1.5);
+    tl.to('#ch11 .ch11-aura', { opacity: 1, duration: 1.5 }, 1.8);
+    tl.to('#ch11 .ch11-her-name', { opacity: 1, y: 0, scale: 1, duration: 1.4, ease: 'power3.out' }, 2.3);
+    tl.to('#ch11 .ch11-question', { opacity: 1, duration: 1.4, ease: 'power2.out' }, 3.6);
+    tl.to('#ch11 .ch11-pulse', { opacity: 1, duration: 0.6 }, 4.6);
+    tl.to('#ch11 .choice-wrap', { opacity: 1, duration: 1, ease: 'power2.out' }, 4.8);
+  };
+
+  function animateCh(num) {
+    if (ANIMS[num]) ANIMS[num]();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     YES CELEBRATION
+     ═══════════════════════════════════════════════════════ */
+  function sayYes() {
+    const ch12 = document.getElementById('ch12');
+    ch12.style.display = 'block';
+    window.scrollTo(0, 0);
+
+    window._setYes(true);
+
+    petals = new Petals(document.getElementById('yesCanvas'));
+    petals.start();
+
+    setTimeout(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+      tl.to('#ch12 .ch12-eyebrow', { opacity: 1, duration: 1.2 }, 0);
+      tl.to('#ch12 .ch12-word', { opacity: 1, scale: 1, duration: 2, ease: 'elastic.out(1, 0.4)' }, 0.3);
+      tl.to('#ch12 .ch12-line', { opacity: 1, y: 0, duration: 1.6 }, 1.5);
+      tl.to('#ch12 .ch12-sig', { opacity: 1, duration: 1.2 }, 3);
+      tl.to('#ch12 .ch12-ring', { opacity: 1, duration: 1.5 }, 3.4);
+    }, 200);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     THINK MODAL
+     ═══════════════════════════════════════════════════════ */
+  function showThink() {
+    const m = document.getElementById('thinkModal');
+    m.classList.add('show');
+    const tl = gsap.timeline();
+    tl.to('.tm-text', { opacity: 1, duration: 1 }, 0.2);
+    tl.to('.tm-close', { opacity: 1, duration: 0.8 }, 0.8);
+  }
+  function closeThink() {
+    const m = document.getElementById('thinkModal');
+    m.classList.remove('show');
+    gsap.set('.tm-text, .tm-close', { opacity: 0 });
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     PROGRESS
+     ═══════════════════════════════════════════════════════ */
+  const progressRail = document.getElementById('progressRail');
+  const pDots = progressRail.querySelectorAll('.p-dot');
+  let progressOn = false;
+
+  function showProgress() {
+    if (!progressOn) { progressOn = true; progressRail.classList.add('show'); }
+  }
+
+  function updateProgress(act) {
+    pDots.forEach((d, i) => d.classList.toggle('on', i <= act));
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     MUSIC CONTROL
+     ═══════════════════════════════════════════════════════ */
+  const musicBtn = document.getElementById('musicBtn');
+  musicBtn.addEventListener('click', () => {
+    musicPlaying = !musicPlaying;
+    musicBtn.classList.toggle('muted', !musicPlaying);
+    // Placeholder: integrate actual audio here
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     LOADER + INIT
+     ═══════════════════════════════════════════════════════ */
+  window.addEventListener('load', () => {
+    // Lock scroll during name reveal
+    document.body.style.overflow = 'hidden';
+
+    const tl = gsap.timeline({
+      onComplete() {
+        gsap.to('#loader', {
+          opacity: 0, duration: 0.8, ease: 'power2.inOut',
+          onComplete() {
+            document.getElementById('loader').style.display = 'none';
+            // Show name reveal
+            nameReveal.classList.add('active');
+            const tl2 = gsap.timeline();
+            tl2.to('#nameReveal .nr-text', { opacity: 1, duration: 1, ease: 'power2.out' }, 0);
+            tl2.to('#nameReveal .nr-input-wrap', { opacity: 1, duration: 0.8 }, 0.8);
+            tl2.to('#nameReveal .nr-input', { opacity: 1, duration: 0.5 }, 1);
+            setTimeout(() => nrInput.focus(), 1200);
+          }
+        });
+      }
+    });
+    tl.to('#loader .loader-msg', { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+    tl.to('#loader .loader-bar', { scaleX: 1, duration: 2.8, ease: 'power1.inOut' }, 0.4);
+    tl.to('#loader .loader-msg', { opacity: 0, duration: 0.5 }, 3.2);
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     SCROLL — show progress rail
+     ═══════════════════════════════════════════════════════ */
+  let scrollCaught = false;
+  window.addEventListener('scroll', () => {
+    if (!scrollCaught && window.scrollY > 80) {
+      scrollCaught = true;
+      showProgress();
+    }
+  }, { passive: true });
+
+  // Show progress on first button tap
+  document.querySelectorAll('.continue-btn').forEach(btn => {
+    btn.addEventListener('click', showProgress, { once: true });
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     INIT STATES
+     ═══════════════════════════════════════════════════════ */
+  gsap.set('#ch0 .ch0-pretitle', { opacity: 0, y: 15 });
+  gsap.set('#ch0 .ch0-name', { opacity: 0, y: 25 });
+  gsap.set('#ch0 .ch0-sub', { opacity: 0, y: 15 });
+  gsap.set('#ch0 .ch0-scroll', { opacity: 0 });
+
+  gsap.set('#ch1 .ch1-quote', { opacity: 0, y: 20 });
+  gsap.set('#ch1 .ch1-snap-icon', { opacity: 0, scale: 0.8 });
+  gsap.set('#ch1 .ch1-line', { opacity: 0, y: 15 });
+
+  gsap.set('#ch2 .ch2-eyebrow', { opacity: 0 });
+  gsap.set('#ch2 .ch2-honest', { opacity: 0 });
+  gsap.set('#ch2 .ch2-title', { opacity: 0, y: 20 });
+  gsap.set('#ch2 .ch2-but', { opacity: 0, y: 15 });
+  gsap.set('.trait', { opacity: 0, x: -15 });
+
+  gsap.set('#ch3 .ch3-eyebrow', { opacity: 0 });
+  gsap.set('#ch3 .ch3-title', { opacity: 0, y: 20 });
+  gsap.set('#ch3 .ch3-intro', { opacity: 0, y: 15 });
+  gsap.set('.dream-card', { opacity: 0, y: 20 });
+
+  gsap.set('#ch4 .ch4-eyebrow', { opacity: 0 });
+  gsap.set('#ch4 .ch4-title', { opacity: 0, y: 20 });
+  gsap.set('#ch4 .ch4-body', { opacity: 0, y: 15 });
+  gsap.set('#ch4 .ch4-playful', { opacity: 0 });
+  gsap.set('#ch4 .ch4-items', { opacity: 0 });
+
+  gsap.set('#ch5 .ch5-pattern', { opacity: 0 });
+  gsap.set('#ch5 .ch5-eyebrow', { opacity: 0 });
+  gsap.set('#ch5 .ch5-title', { opacity: 0, y: 20 });
+  gsap.set('#ch5 .ch5-body', { opacity: 0, y: 15 });
+  gsap.set('#ch5 .ch5-weave', { opacity: 0, scaleX: 0 });
+
+  gsap.set('#ch6 .ch6-eyebrow', { opacity: 0 });
+  gsap.set('#ch6 .ch6-title', { opacity: 0, y: 20 });
+  gsap.set('#ch6 .ch6-body', { opacity: 0, y: 15 });
+  gsap.set('#ch6 .ch6-gifts', { opacity: 0 });
+  gsap.set('#ch6 .ch6-funny', { opacity: 0 });
+
+  gsap.set('#ch7 .ch7-eyebrow', { opacity: 0 });
+  gsap.set('#ch7 .ch7-setup', { opacity: 0, y: 15 });
+  gsap.set('#ch7 .ch7-youme', { opacity: 0 });
+  gsap.set('#ch7 .ch7-deal', { opacity: 0 });
+
+  gsap.set('#ch8 .ch8-eyebrow', { opacity: 0 });
+  gsap.set('#ch8 .ch8-rule', { opacity: 0, scaleY: 0 });
+  gsap.set('#ch8 .ch8-title', { opacity: 0, y: 20 });
+  gsap.set('#ch8 .ch8-body', { opacity: 0, y: 15 });
+  gsap.set('#ch8 .cal-grid', { opacity: 0 });
+
+  gsap.set('#ch9 .ch9-eyebrow', { opacity: 0 });
+  gsap.set('#ch9 .ch9-but', { opacity: 0 });
+  gsap.set('#ch9 .ch9-name', { opacity: 0, y: 20 });
+  gsap.set('.promise', { opacity: 0, y: 15 });
+  gsap.set('#ch9 .ch9-money', { opacity: 0 });
+
+  gsap.set('#ch10 .ch10-eyebrow', { opacity: 0 });
+  gsap.set('#ch10 .life-grid', { opacity: 0 });
+  gsap.set('.life-item', { opacity: 0 });
+  gsap.set('#ch10 .ch10-big', { opacity: 0, y: 20 });
+
+  gsap.set('#ch11 .ch11-your-name', { opacity: 0 });
+  gsap.set('#ch11 .ch11-rule', { opacity: 0, scaleY: 0 });
+  gsap.set('#ch11 .ch11-aura', { opacity: 0 });
+  gsap.set('#ch11 .ch11-her-name', { opacity: 0, y: 20, scale: 0.97 });
+  gsap.set('#ch11 .ch11-question', { opacity: 0 });
+  gsap.set('#ch11 .ch11-pulse', { opacity: 0 });
+  gsap.set('#ch11 .choice-wrap', { opacity: 0 });
+
+  gsap.set('#ch12 .ch12-eyebrow', { opacity: 0 });
+  gsap.set('#ch12 .ch12-word', { opacity: 0, scale: 0.85 });
+  gsap.set('#ch12 .ch12-line', { opacity: 0, y: 20 });
+  gsap.set('#ch12 .ch12-sig', { opacity: 0 });
+  gsap.set('#ch12 .ch12-ring', { opacity: 0 });
 
   </script>
 </body>
