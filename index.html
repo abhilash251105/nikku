@@ -1411,39 +1411,28 @@
       <div class="ch11-question">Will you marry me?</div>
       <div class="ch11-pulse"></div>
       <div class="choice-wrap">
-        <button class="btn-yes" onclick="sayYes()">Yes</button>
-        <button class="btn-think" onclick="showThink()">I need to think</button>
+        <button class="btn-yes" onclick="openWhatsApp('yes')">Yes</button>
+        <button class="btn-think" onclick="openWhatsApp('think')">I need to think</button>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       THINK MODAL
+       CHAPTER 12: THANK YOU → WHATSAPP
        ═══════════════════════════════════════════════ -->
-  <div class="think-modal" id="thinkModal">
-    <div class="tm-text">
-      Take all the time you need.<br><br>
-      A yes means something only when<br>it comes from your heart.<br><br>
-      <em>I'll be right here.</em>
-    </div>
-    <button class="tm-close" onclick="closeThink()">I understand</button>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════
-       CHAPTER 12: YES
-       ═══════════════════════════════════════════════ -->
-  <section id="ch12">
-    <canvas class="ch12-canvas" id="yesCanvas"></canvas>
-    <div class="ch12-aura"></div>
-    <div class="ch12-inner">
-      <div class="ch12-eyebrow">she said</div>
-      <div class="ch12-word">YES</div>
-      <div class="ch12-line">
-        I knew this page was going to have<br>a happy ending&hellip;<br><br>
-        Now the real story begins.
+  <section id="ch12" style="display:none;">
+    <div class="ch12-inner" style="position:relative; z-index:2; text-align:center; padding:0 28px; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div class="ch12-eyebrow" style="opacity:0;">thank you</div>
+      <div class="ch12-word" style="opacity:0; font-size: clamp(48px, 12vw, 100px);">Thank You</div>
+      <div class="ch12-line" style="opacity:0; margin-top: 24px;">
+        For your response.<br>
+        For your honesty.<br>
+        For being <em>you</em>.
       </div>
-      <div class="ch12-sig">forever yours</div>
-      <div class="ch12-ring"></div>
+      <div class="ch12-line" style="opacity:0; margin-top: 16px; color: var(--gold-soft);">
+        Opening WhatsApp now&hellip;
+      </div>
+      <div class="ch12-ring" style="opacity:0; margin-top: 40px;"></div>
     </div>
   </section>
 
@@ -1853,42 +1842,30 @@
   }
 
   /* ═══════════════════════════════════════════════════════
-     YES CELEBRATION
+     WHATSAPP REDIRECT
+     Both buttons open WhatsApp with the right message.
      ═══════════════════════════════════════════════════════ */
-  function sayYes() {
+  function openWhatsApp(choice) {
     const ch12 = document.getElementById('ch12');
     ch12.style.display = 'block';
     window.scrollTo(0, 0);
 
-    window._setYes(true);
+    const isYes = choice === 'yes';
+    const msg = isYes
+      ? 'I said YES! ❤️'
+      : 'I need some time to think... But I wanted to tell you something first.';
 
-    petals = new Petals(document.getElementById('yesCanvas'));
-    petals.start();
+    // Animate thank-you screen briefly
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+    tl.to('#ch12 .ch12-eyebrow', { opacity: 1, duration: 1 }, 0);
+    tl.to('#ch12 .ch12-word', { opacity: 1, y: 0, duration: 1.2 }, 0.3);
+    tl.to('#ch12 .ch12-line', { opacity: 1, y: 0, duration: 1, stagger: 0.2 }, 1);
+    tl.to('#ch12 .ch12-ring', { opacity: 1, duration: 1 }, 2);
 
+    // Open WhatsApp after a brief moment
     setTimeout(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-      tl.to('#ch12 .ch12-eyebrow', { opacity: 1, duration: 1.2 }, 0);
-      tl.to('#ch12 .ch12-word', { opacity: 1, scale: 1, duration: 2, ease: 'elastic.out(1, 0.4)' }, 0.3);
-      tl.to('#ch12 .ch12-line', { opacity: 1, y: 0, duration: 1.6 }, 1.5);
-      tl.to('#ch12 .ch12-sig', { opacity: 1, duration: 1.2 }, 3);
-      tl.to('#ch12 .ch12-ring', { opacity: 1, duration: 1.5 }, 3.4);
-    }, 200);
-  }
-
-  /* ═══════════════════════════════════════════════════════
-     THINK MODAL
-     ═══════════════════════════════════════════════════════ */
-  function showThink() {
-    const m = document.getElementById('thinkModal');
-    m.classList.add('show');
-    const tl = gsap.timeline();
-    tl.to('.tm-text', { opacity: 1, duration: 1 }, 0.2);
-    tl.to('.tm-close', { opacity: 1, duration: 0.8 }, 0.8);
-  }
-  function closeThink() {
-    const m = document.getElementById('thinkModal');
-    m.classList.remove('show');
-    gsap.set('.tm-text, .tm-close', { opacity: 0 });
+      window.open('https://wa.me/8480618808?text=' + encodeURIComponent(msg), '_blank');
+    }, isYes ? 2500 : 3000);
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -2024,9 +2001,8 @@
   gsap.set('#ch11 .choice-wrap', { opacity: 0 });
 
   gsap.set('#ch12 .ch12-eyebrow', { opacity: 0 });
-  gsap.set('#ch12 .ch12-word', { opacity: 0, scale: 0.85 });
-  gsap.set('#ch12 .ch12-line', { opacity: 0, y: 20 });
-  gsap.set('#ch12 .ch12-sig', { opacity: 0 });
+  gsap.set('#ch12 .ch12-word', { opacity: 0, y: 20 });
+  gsap.set('#ch12 .ch12-line', { opacity: 0, y: 15 });
   gsap.set('#ch12 .ch12-ring', { opacity: 0 });
 
   </script>
