@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>A letter for Nikku</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       ROOT & RESET
+       ═══════════════════════════════════════════ */
+    :root {
+      --bg-deep: #06050a;
+      --bg-mid: #0a0812;
+      --text-primary: #f5f0e8;
+      --text-secondary: rgba(245, 240, 232, 0.6);
+      --text-dim: rgba(245, 240, 232, 0.35);
+      --gold: #c9a96e;
+      --gold-soft: rgba(201, 169, 110, 0.6);
+      --rose: #e8b4b8;
+      --rose-soft: rgba(232, 180, 184, 0.5);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      cursor: default;
+    }
+    ::selection { background: rgba(201, 169, 110, 0.25); color: var(--text-primary); }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    /* ═══════════════════════════════════════════
+       NOISE OVERLAY (film grain)
+       ═══════════════════════════════════════════ */
+    .grain {
+      position: fixed; inset: 0; z-index: 9998;
+      pointer-events: none; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px;
+    }
+
+    /* ═══════════════════════════════════════════
+       FIREFLY CANVAS
+       ═══════════════════════════════════════════ */
+    #fireflies {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       LOADING SCREEN
+       ═══════════════════════════════════════════ */
+    #loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-deep);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 24px;
+    }
+    #loader .loader-word {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; font-weight: 300; font-style: italic;
+      color: var(--gold-soft); opacity: 0;
+      letter-spacing: 1px;
+    }
+    #loader .loader-line {
+      width: 32px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+      transform: scaleX(0); transform-origin: center;
+    }
+
+    /* ═══════════════════════════════════════════
+       GLOBAL TYPOGRAPHY UTILITIES
+       ═══════════════════════════════════════════ */
+    .eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 300;
+      letter-spacing: 5px; text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-bottom: 28px;
+      display: block;
+    }
+
+    /* ═══════════════════════════════════════════
+       ACT CONTAINER
+       ═══════════════════════════════════════════ */
+    .act {
+      min-height: 100dvh;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 2;
+      padding: 80px 28px;
+    }
+    .act-inner {
+      max-width: 560px; width: 100%;
+    }
+
+    /* ═══════════════════════════════════════════
+       ACT 1: OPENING
+       Intimate. Her name, large. Nothing else.
+       ═══════════════════════════════════════════ */
+    #act1 {
+      flex-direction: column; text-align: center;
+      min-height: 100dvh; min-height: 100vh;
+    }
+    #act1 .opening-for {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 300;
+      letter-spacing: 8px; text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 48px;
+      opacity: 0;
+    }
+    #act1 .opening-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 11vw, 100px);
+      font-weight: 400; line-height: 1.05;
+      color: var(--text-primary);
+      opacity: 0;
+    }
+    #act1 .opening-name em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #act1 .opening-dash {
+      width: 1px; height: 48px;
+      background: linear-gradient(180deg, transparent, var(--gold-soft), transparent);
+      margin: 44px auto;
+      opacity: 0;
+    }
+    #act1 .opening-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(17px, 2.8vw, 22px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 360px; margin: 0 auto;
+      opacity: 0;
+    }
+    #act1 .opening-scroll {
+      margin-top: 64px; opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       ACT 2: HOW WE MET
+       Left-aligned, conversational. Real.
+       ═══════════════════════════════════════════ */
+    #act2 { justify-content: flex-start; padding-top: 120px; }
+    #act2 .act-inner { text-align: left; max-width: 480px; }
+    #act2 .act2-eyebrow { opacity: 0; }
+    #act2 .act2-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 6vw, 48px);
+      font-weight: 400; line-height: 1.2;
+      margin-bottom: 36px;
+      opacity: 0;
+    }
+    #act2 .act2-title em {
+      font-style: italic;
+      color: var(--gold-soft);
+    }
+    #act2 .act2-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(17px, 2.8vw, 21px);
+      font-weight: 300; line-height: 1.9;
+      color: var(--text-secondary);
+      opacity: 0;
+    }
+    #act2 .act2-body .accent {
+      color: var(--gold-soft); font-style: italic;
+    }
+    #act2 .act2-body .highlight {
+      color: var(--rose-soft);
+    }
+
+    /* ═══════════════════════════════════════════
+       ACT 3: THE MOMENTS
+       Alternating left/right for visual rhythm.
+       Three memories, each different.
+       ═══════════════════════════════════════════ */
+    #act3 { padding: 100px 28px; min-height: auto; }
+    #act3 .act-inner { max-width: 520px; }
+    #act3 .act3-eyebrow { opacity: 0; }
+    #act3 .act3-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 38px);
+      font-weight: 400; line-height: 1.2;
+      margin-bottom: 56px;
+      opacity: 0;
+    }
+    #act3 .act3-title em {
+      font-style: italic;
+      color: var(--gold-soft);
+    }
+
+    .memory {
+      padding: 40px 0;
+      opacity: 0;
+      position: relative;
+    }
+    .memory + .memory {
+      border-top: 1px solid rgba(245, 240, 232, 0.06);
+    }
+    .memory-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px; font-weight: 300;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-bottom: 18px;
+      display: block;
+    }
+    .memory-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(17px, 2.8vw, 22px);
+      font-weight: 300; line-height: 1.85;
+      color: var(--text-secondary);
+    }
+    .memory-text em { color: var(--rose-soft); font-style: italic; }
+    .memory-text .gold { color: var(--gold-soft); font-style: italic; }
+
+    /* The "first time" memory gets pulled-left treatment */
+    .memory.quiet { padding-left: 0; }
+    /* The "laughter" memory gets an indent for rhythm */
+    .memory.laughter { padding-left: 24px; }
+    /* The "hard days" memory gets pulled back to left */
+    .memory.hard { padding-left: 0; }
+
+    /* ═══════════════════════════════════════════
+       ACT 4: THE LIST
+       Not bullets. Observations. The way someone
+       who loves you actually talks about you.
+       ═══════════════════════════════════════════ */
+    #act4 { padding: 120px 28px; }
+    #act4 .act-inner { max-width: 460px; text-align: left; }
+    #act4 .act4-eyebrow { opacity: 0; }
+    #act4 .act4-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 400; line-height: 1.25;
+      margin-bottom: 44px;
+      opacity: 0;
+    }
+    #act4 .act4-title em {
+      font-style: italic;
+      color: var(--gold-soft);
+    }
+    #act4 .observation {
+      padding: 22px 0;
+      border-bottom: 1px solid rgba(245, 240, 232, 0.04);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(16px, 2.6vw, 20px);
+      font-weight: 300; line-height: 1.8;
+      color: var(--text-secondary);
+      opacity: 0;
+      position: relative;
+      padding-left: 28px;
+    }
+    #act4 .observation::before {
+      content: '';
+      position: absolute; left: 0; top: 28px;
+      width: 12px; height: 1px;
+      background: var(--gold-soft);
+      opacity: 0.4;
+    }
+    #act4 .observation:last-child { border-bottom: none; }
+    #act4 .observation em { color: var(--rose-soft); font-style: italic; }
+    #act4 .observation .gold { color: var(--gold-soft); }
+
+    /* ═══════════════════════════════════════════
+       ACT 5: THE BUILD-UP
+       Accelerating pace. Short lines. Tension.
+       This is where she starts to feel it coming.
+       ═══════════════════════════════════════════ */
+    #act5 { flex-direction: column; padding: 100px 28px; }
+    #act5 .act-inner {
+      max-width: 420px;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+    }
+    #act5 .act5-eyebrow { opacity: 0; }
+
+    .tension-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300; line-height: 1.8;
+      color: var(--text-secondary);
+      opacity: 0;
+      max-width: 380px;
+    }
+    .tension-line.soft {
+      font-size: clamp(17px, 2.8vw, 21px);
+    }
+    .tension-line.medium {
+      font-size: clamp(19px, 3.2vw, 24px);
+      color: rgba(245, 240, 232, 0.7);
+    }
+    .tension-line.strong {
+      font-size: clamp(21px, 3.5vw, 27px);
+      color: rgba(245, 240, 232, 0.8);
+      font-weight: 400;
+    }
+    .tension-line.strong em {
+      color: var(--gold-soft);
+      font-style: italic;
+    }
+    .tension-line.final {
+      font-size: clamp(22px, 3.8vw, 30px);
+      color: var(--text-primary);
+      font-weight: 500;
+      font-style: italic;
+    }
+    .tension-gap {
+      width: 1px; height: 36px;
+      background: linear-gradient(180deg, transparent, rgba(201, 169, 110, 0.15), transparent);
+      margin: 44px 0;
+      opacity: 0;
+    }
+
+    /* The precipice — the moment before the question */
+    #act5 .precipice {
+      margin-top: 20px;
+      opacity: 0;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 2.2vw, 17px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    /* ═══════════════════════════════════════════
+       ACT 6: THE PROPOSAL
+       BREAKS EVERY PATTERN ABOVE.
+       Full-bleed. Center. Everything stops.
+       Cinematic letterbox bars.
+       The detonation.
+       ═══════════════════════════════════════════ */
+    #act6 {
+      min-height: 100dvh; min-height: 100vh;
+      background: var(--bg-deep);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Letterbox bars — cinematic framing */
+    #act6 .letterbox-top,
+    #act6 .letterbox-bottom {
+      position: absolute; left: 0; right: 0;
+      height: 0;
+      background: #000;
+      z-index: 5;
+      transition: height 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    #act6 .letterbox-top { top: 0; }
+    #act6 .letterbox-bottom { bottom: 0; }
+    #act6.letterboxed .letterbox-top,
+    #act6.letterboxed .letterbox-bottom {
+      height: 8vh;
+    }
+
+    /* Vignette */
+    #act6 .proposal-vignette {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 20%, var(--bg-deep) 75%);
+      pointer-events: none; z-index: 2;
+    }
+
+    /* Breathing glow behind her name */
+    #act6 .proposal-aura {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 400px; height: 400px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(201, 169, 110, 0.04) 0%, transparent 60%);
+      pointer-events: none; z-index: 1;
+      opacity: 0;
+    }
+
+    #act6 .proposal-content {
+      position: relative; z-index: 3;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    /* Prelude whisper */
+    #act6 .proposal-whisper {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(15px, 2.4vw, 19px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-dim);
+      line-height: 1.7;
+      margin-bottom: 56px;
+      opacity: 0;
+    }
+
+    /* Thin gold rule */
+    #act6 .proposal-rule {
+      width: 1px; height: 56px;
+      background: linear-gradient(180deg, transparent, var(--gold-soft), transparent);
+      margin: 0 auto 48px;
+      opacity: 0;
+    }
+
+    /* HER NAME — massive, weightless */
+    #act6 .proposal-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(56px, 13vw, 120px);
+      font-weight: 400; line-height: 1;
+      background: linear-gradient(180deg, var(--text-primary) 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 40px;
+      opacity: 0;
+    }
+
+    /* THE QUESTION — this is the bomb */
+    #act6 .proposal-question {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 400; font-style: italic;
+      color: var(--text-primary);
+      line-height: 1.35;
+      opacity: 0;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Heartbeat line */
+    #act6 .proposal-pulse {
+      width: 180px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--rose-soft), transparent);
+      margin: 48px auto 0;
+      opacity: 0;
+      animation: pulseLine 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseLine {
+      0%, 100% { transform: scaleX(1); opacity: 0.5; }
+      15% { transform: scaleX(1.6); opacity: 1; }
+      30% { transform: scaleX(0.9); opacity: 0.4; }
+      45% { transform: scaleX(1.3); opacity: 0.8; }
+      60% { transform: scaleX(1); opacity: 0.5; }
+    }
+
+    /* THE BUTTON — not a button. A promise. */
+    .btn-promise {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 300;
+      letter-spacing: 6px; text-transform: uppercase;
+      color: var(--bg-deep);
+      background: linear-gradient(135deg, var(--gold) 0%, #d4b896 100%);
+      border: none; cursor: pointer;
+      padding: 20px 56px;
+      margin-top: 56px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.4s ease;
+      opacity: 0;
+    }
+    .btn-promise::after {
+      content: '';
+      position: absolute; inset: -6px;
+      border: 1px solid rgba(201, 169, 110, 0.15);
+      pointer-events: none;
+      transition: all 0.4s ease;
+    }
+    .btn-promise:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(201, 169, 110, 0.2), 0 0 80px rgba(201, 169, 110, 0.1);
+    }
+    .btn-promise:hover::after {
+      inset: -10px;
+      border-color: rgba(201, 169, 110, 0.25);
+    }
+    .btn-promise:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    /* ═══════════════════════════════════════════
+       ACT 7: YES
+       A completely different world.
+       Warm. Expansive. Alive.
+       ═══════════════════════════════════════════ */
+    #act7 {
+      display: none;
+      min-height: 100dvh; min-height: 100vh;
+      background: var(--bg-mid);
+      position: relative;
+      overflow: hidden;
+    }
+    #act7 .yes-aura {
+      position: absolute;
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at 50% 40%, rgba(201, 169, 110, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    #act7 .yes-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+    #act7 .yes-inner {
+      position: relative; z-index: 2;
+      text-align: center;
+      padding: 0 28px;
+    }
+    #act7 .yes-eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(14px, 2.2vw, 17px);
+      font-weight: 300; font-style: italic;
+      color: var(--rose-soft);
+      margin-bottom: 24px;
+      opacity: 0;
+    }
+    #act7 .yes-word {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(64px, 16vw, 180px);
+      font-weight: 400; line-height: 0.95;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--rose) 50%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      letter-spacing: -3px;
+      filter: drop-shadow(0 0 60px rgba(201, 169, 110, 0.15));
+    }
+    #act7 .yes-underline {
+      width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+      margin: 32px auto;
+      opacity: 0;
+    }
+    #act7 .yes-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(18px, 3vw, 25px);
+      font-weight: 300; font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 400px;
+      margin: 0 auto;
+      opacity: 0;
+    }
+    #act7 .yes-signature {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(16px, 2.4vw, 20px);
+      font-weight: 400; font-style: italic;
+      color: var(--gold-soft);
+      margin-top: 60px;
+      opacity: 0;
+    }
+    #act7 .yes-date {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 200;
+      letter-spacing: 4px;
+      color: var(--text-dim);
+      margin-top: 16px;
+      opacity: 0;
+    }
+    #act7 .yes-ring-mark {
+      width: 72px; height: 72px;
+      border: 1px solid rgba(201, 169, 110, 0.12);
+      border-radius: 50%;
+      margin: 48px auto 0;
+      position: relative;
+      opacity: 0;
+    }
+    #act7 .yes-ring-mark::before {
+      content: '';
+      position: absolute; inset: 6px;
+      border-radius: 50%;
+      border: 1px solid rgba(201, 169, 110, 0.06);
+    }
+    #act7 .yes-ring-mark::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 6px; height: 6px;
+      background: rgba(201, 169, 110, 0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ═══════════════════════════════════════════
+       PROGRESS INDICATOR
+       Subtle dots along the right edge
+       ═══════════════════════════════════════════ */
+    .progress {
+      position: fixed; right: 16px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column;
+      gap: 12px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .progress.visible { opacity: 1; }
+    .progress-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: rgba(201, 169, 110, 0.15);
+      transition: all 0.6s ease;
+    }
+    .progress-dot.reached {
+      background: rgba(201, 169, 110, 0.5);
+      box-shadow: 0 0 6px rgba(201, 169, 110, 0.2);
+    }
+
+    /* ═══════════════════════════════════════════
+       FLOATING PETAL (for YES)
+       ═══════════════════════════════════════════ */
+    .petal {
+      position: fixed; pointer-events: none; z-index: 5;
+      opacity: 0;
+      border-radius: 50% 0 50% 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .act { padding: 60px 20px; }
+      #act2 { padding-top: 100px; }
+      .memory.laughter { padding-left: 16px; }
+      .btn-promise { padding: 18px 44px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Film grain -->
+  <div class="grain"></div>
+
+  <!-- Firefly particles -->
+  <canvas id="fireflies"></canvas>
+
+  <!-- Progress indicator -->
+  <div class="progress" id="progress">
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       LOADING
+       ═══════════════════════════════════════════════════ -->
+  <div id="loader">
+    <div class="loader-word">for someone special</div>
+    <div class="loader-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 1: OPENING
+       Just her name. Nothing else matters right now.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act1" class="act">
+    <div style="text-align:center;">
+      <div class="opening-for">a letter for</div>
+      <h1 class="opening-name">N<em>i</em>kku</h1>
+      <div class="opening-dash"></div>
+      <p class="opening-line">
+        from the one who can't stop thinking about you
+      </p>
+      <div class="opening-scroll">
+        <button class="continue-btn" onclick="goToAct(2)">
+          begin
+          <span class="arrow"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 2: HOW WE MET
+       Left-aligned. Conversational. Real.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act2" class="act">
+    <div class="act-inner">
+      <span class="eyebrow act2-eyebrow">chapter one</span>
+      <h2 class="act2-title">
+        It was <em>college</em>
+      </h2>
+      <p class="act2-body">
+        Some days were long. The lectures blurred together. The same chai from the canteen,
+        the same walk back, the same playlist on repeat.
+        And then you were there — and suddenly everything had a soundtrack.
+      </p>
+      <p class="act2-body" style="margin-top: 24px;">
+        I didn't plan it. I didn't see it coming.
+        But one day I caught myself looking for you in every crowd,
+        and I knew I was <span class="accent">already in it</span>.
+      </p>
+      <button class="continue-btn" onclick="goToAct(3)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 3: THREE YEARS
+       Three memories. Each one a different rhythm.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act3" class="act">
+    <div class="act-inner">
+      <span class="eyebrow act3-eyebrow">chapter two</span>
+      <h2 class="act3-title">
+        1,095 days of <em>us</em>
+      </h2>
+
+      <div class="memory quiet">
+        <span class="memory-tag">the first time</span>
+        <div class="memory-text">
+          I remember the exact moment.
+          Not dramatic. Not movie-scene.
+          Just you, laughing at something stupid I said,
+          and I thought — <em>I want this forever.</em>
+        </div>
+      </div>
+
+      <div class="memory laughter">
+        <span class="memory-tag">the laughter</span>
+        <div class="memory-text">
+          The late-night calls that turned into morning.
+          The terrible movies we sat through because you picked them.
+          The way you laugh at my jokes even when they're not funny.
+          Especially when they're not funny.
+        </div>
+      </div>
+
+      <div class="memory hard">
+        <span class="memory-tag">the hard days</span>
+        <div class="memory-text">
+          We've had them. The kind that test you.
+          And every single time,
+          I'd rather be in the middle of it with you
+          than anywhere else without you.
+        </div>
+      </div>
+
+      <button class="continue-btn" onclick="goToAct(4)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 4: WHAT I KNOW
+       Observations. Not compliments — things I've
+       actually noticed. Things that are true.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act4" class="act">
+    <div class="act-inner">
+      <span class="eyebrow act4-eyebrow">chapter three</span>
+      <h2 class="act4-title">
+        Here's what I know about <em>you</em>
+      </h2>
+
+      <div class="observation">
+        The way your face lights up when you talk about something you love
+      </div>
+      <div class="observation">
+        How you <em>listen</em> — really listen — like nothing else exists in that moment
+      </div>
+      <div class="observation">
+        That you pick up the check when you think I'm low on cash
+        <span class="gold">and pretend you didn't notice</span>
+      </div>
+      <div class="observation">
+        Your terrible taste in movies and your perfect taste in everything else
+      </div>
+      <div class="observation">
+        The way you make any ordinary day feel like it's worth remembering
+      </div>
+
+      <button class="continue-btn" onclick="goToAct(5)" style="margin-top: 48px;">
+        continue
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 5: THE BUILD-UP
+       Accelerating. Short lines. She should feel
+       her heart rate change. The precipice.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act5" class="act">
+    <div class="act-inner">
+      <span class="eyebrow act5-eyebrow">chapter four</span>
+
+      <p class="tension-line soft">
+        Three years.
+      </p>
+      <div class="tension-gap"></div>
+
+      <p class="tension-line medium">
+        1,095 days.
+        <br>Over 26,000 hours.
+      </p>
+      <div class="tension-gap"></div>
+
+      <p class="tension-line medium">
+        And not one of them was a waste.
+      </p>
+      <div class="tension-gap"></div>
+
+      <p class="tension-line strong">
+        You know all of me.
+        <br>The messy parts. The quiet parts.
+        <br>The parts I don't show anyone else.
+        <br>And you <em>stayed</em>.
+      </p>
+      <div class="tension-gap"></div>
+
+      <p class="tension-line strong">
+        Not because you had to.
+        <br>Because you <em>wanted</em> to.
+      </p>
+      <div class="tension-gap"></div>
+
+      <p class="tension-line final">
+        And I want the rest of your days.
+        <br>All of them.
+      </p>
+
+      <p class="precipice">
+        There's something I need to say.
+        <br>Something that's been sitting here for a while.
+      </p>
+
+      <button class="continue-btn" onclick="goToAct(6)" style="margin-top: 48px;">
+        I'm listening
+        <span class="arrow"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 6: THE PROPOSAL
+       Everything stops. Letterbox opens.
+       Her name. The pause. The question.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act6" class="act">
+    <div class="letterbox-top"></div>
+    <div class="letterbox-bottom"></div>
+    <div class="proposal-vignette"></div>
+    <div class="proposal-aura"></div>
+    <div class="proposal-content">
+      <div class="proposal-whisper">
+        I've been carrying this for a while…
+      </div>
+      <div class="proposal-rule"></div>
+      <div class="proposal-name">Nikku</div>
+      <div class="proposal-question">
+        Will you marry me?
+      </div>
+      <div class="proposal-pulse"></div>
+      <button class="btn-promise" onclick="sayYes()">Yes</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       ACT 7: YES
+       A different world. Warm. Expansive. Alive.
+       ═══════════════════════════════════════════════════ -->
+  <section id="act7">
+    <canvas class="yes-canvas" id="petals"></canvas>
+    <div class="yes-aura"></div>
+    <div class="yes-inner">
+      <div class="yes-eyebrow">she said</div>
+      <div class="yes-word">YES</div>
+      <div class="yes-underline"></div>
+      <div class="yes-line">
+        You just made me the happiest person alive.
+        <br><br>
+        This is us. Starting.
+        <br>Every chapter from here — together.
+      </div>
+      <div class="yes-signature">forever yours</div>
+      <div class="yes-date">our story continues</div>
+      <div class="yes-ring-mark"></div>
+    </div>
+  </section>
+
+  <script>
+  /* ═══════════════════════════════════════════════
+     FIREFLY SYSTEM
+     Ambient warmth throughout. Slows during proposal.
+     Shifts to gold/rose on YES.
+     ═══════════════════════════════════════════════ */
+  ;(function() {
+    const canvas = document.getElementById('fireflies');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+    let proposalActive = false;
+    let yesMode = false;
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Firefly {
+      constructor(initial) { this.init(initial); }
+      init(scatter) {
+        this.x = Math.random() * W;
+        this.y = scatter ? Math.random() * H : (Math.random() < 0.5 ? -10 : H + 10);
+        this.r = Math.random() * 1.4 + 0.4;
+        this.vx = (Math.random() - 0.5) * 0.25;
+        this.vy = (Math.random() - 0.5) * 0.25;
+        this.phase = Math.random() * Math.PI * 2;
+        this.phaseSpeed = (Math.random() - 0.5) * 0.015;
+        this.drift = Math.random() * 0.4 + 0.1;
+        this.driftSpeed = (Math.random() * 0.02 + 0.005);
+        this.maxAlpha = Math.random() * 0.35 + 0.08;
+        this.alpha = this.maxAlpha;
+        this.fadeDir = 1;
+        this.fadeSpeed = Math.random() * 0.004 + 0.001;
+      }
+      update() {
+        const slow = proposalActive ? 0.2 : 1;
+        this.phase += this.phaseSpeed;
+        this.x += (this.vx * slow) + Math.sin(this.phase) * this.drift * 0.3;
+        this.y += (this.vy * slow) + Math.cos(this.phase) * this.drift * 0.2;
+
+        this.alpha += this.fadeDir * this.fadeSpeed * (proposalActive ? 0.4 : 1);
+        const cap = proposalActive ? 0.12 : this.maxAlpha;
+        if (this.alpha > cap) { this.alpha = cap; this.fadeDir = -1; }
+        if (this.alpha < 0.015) { this.alpha = 0.015; this.fadeDir = 1; }
+
+        if (this.x < -30 || this.x > W + 30 || this.y < -30 || this.y > H + 30) {
+          this.init(false);
+        }
+      }
+      draw() {
+        const a = yesMode ? this.alpha * 1.5 : this.alpha;
+        // Core
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        if (yesMode) {
+          ctx.fillStyle = Math.random() > 0.5
+            ? `rgba(232,180,184,${Math.min(a, 0.6)})`
+            : `rgba(201,169,110,${Math.min(a, 0.6)})`;
+        } else if (proposalActive) {
+          ctx.fillStyle = `rgba(180,160,140,${a * 0.5})`;
+        } else {
+          ctx.fillStyle = `rgba(190,170,140,${a})`;
+        }
+        ctx.fill();
+        // Soft halo
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * 4, 0, Math.PI * 2);
+        if (yesMode) {
+          ctx.fillStyle = `rgba(232,180,184,${a * 0.08})`;
+        } else if (proposalActive) {
+          ctx.fillStyle = `rgba(201,169,110,${a * 0.04})`;
+        } else {
+          ctx.fillStyle = `rgba(190,170,140,${a * 0.06})`;
+        }
+        ctx.fill();
+      }
+    }
+
+    const count = Math.min(Math.floor((W * H) / 18000), 70);
+    for (let i = 0; i < count; i++) particles.push(new Firefly(true));
+
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    window._setProposal = v => proposalActive = v;
+    window._setYes = v => yesMode = v;
+  })();
+
+  /* ═══════════════════════════════════════════════
+     PETAL SYSTEM — for YES celebration
+     Rose and gold petals, not rectangles.
+     Soft, curved, drifting.
+     ═══════════════════════════════════════════════ */
+  class PetalSystem {
+    constructor(canvas) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext('2d');
+      this.petals = [];
+      this.running = false;
+      this.resize();
+    }
+    resize() {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    }
+    spawn(count) {
+      const W = this.canvas.width;
+      const colors = [
+        '201,169,110', '232,180,184', '220,195,170',
+        '210,185,165', '240,225,210', '225,200,185'
+      ];
+      for (let i = 0; i < count; i++) {
+        this.petals.push({
+          x: Math.random() * W,
+          y: -20 - Math.random() * 300,
+          size: Math.random() * 7 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: Math.random() * 0.45 + 0.15,
+          rot: Math.random() * 360,
+          rotV: (Math.random() - 0.5) * 2.5,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: Math.random() * 1.2 + 0.4,
+          sway: Math.random() * 1.5 + 0.5,
+          swaySpeed: Math.random() * 0.015 + 0.008,
+          swayOffset: Math.random() * Math.PI * 2,
+          life: 1,
+          decay: 0.0006 + Math.random() * 0.0003
+        });
+      }
+    }
+    start() {
+      if (this.running) return;
+      this.running = true;
+      this.resize();
+      window.addEventListener('resize', () => this.resize());
+      this.spawn(150);
+      this._loop = setInterval(() => {
+        if (this.petals.length < 250) this.spawn(12);
+      }, 500);
+      this.animate();
+    }
+    stop() {
+      this.running = false;
+      clearInterval(this._loop);
+      cancelAnimationFrame(this._raf);
+      this.petals = [];
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+    animate() {
+      if (!this.running) return;
+      const ctx = this.ctx;
+      const W = this.canvas.width, H = this.canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      const t = performance.now() * 0.001;
+
+      this.petals = this.petals.filter(p => {
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(t + p.swayOffset) * p.sway;
+        p.rot += p.rotV;
+        p.life -= p.decay;
+        if (p.life <= 0 || p.y > H + 40) return false;
+
+        const a = p.alpha * p.life;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI / 180);
+        ctx.fillStyle = `rgba(${p.color},${a})`;
+        ctx.beginPath();
+        // Petal shape: ellipse rotated
+        ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        return true;
+      });
+
+      this._raf = requestAnimationFrame(() => this.animate());
+    }
+  }
+
+  /* ═══════════════════════════════════════════════
+     CONTINUE BUTTONS
+     Each act gets its own emotionally-worded button.
+     ═══════════════════════════════════════════════ */
+  const btnLabels = {
+    2: 'continue',
+    3: 'continue',
+    4: 'continue',
+    5: 'I\'m listening',
+    6: 'I\'m ready'
+  };
+
+  function renderContinueBtn(actNum) {
+    return `<button class="continue-btn" onclick="goToAct(${actNum + 1})">
+      ${btnLabels[actNum]}
+      <span class="arrow"></span>
+    </button>`;
+  }
+
+  /* ═══════════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════════ */
+  let petals;
+  let letterboxed = false;
+
+  function goToAct(num) {
+    const el = document.getElementById('act' + num);
+    if (!el) return;
+
+    // Signal fireflies
+    if (num === 6) { window._setProposal(true); }
+    if (num === 1) { window._setProposal(false); }
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => animateAct(num), 500);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ANIMATION TIMELINES
+     Each act has a unique choreography.
+     ═══════════════════════════════════════════════ */
+  const anims = {};
+
+  anims[1] = () => {
+    const tl = gsap.timeline();
+    tl.to('#act1 .opening-for', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, 0);
+    tl.to('#act1 .opening-name', { opacity: 1, y: 0, duration: 1.6, ease: 'power3.out' }, 0.4);
+    tl.to('#act1 .opening-dash', { opacity: 1, scaleY: 1, duration: 0.8, ease: 'power2.inOut' }, 1.2);
+    tl.to('#act1 .opening-line', { opacity: 1, y: 0, duration: 1.2, ease: 'power2.out' }, 1.5);
+    tl.to('#act1 .opening-scroll', { opacity: 1, duration: 0.8 }, 2.2);
+  };
+
+  anims[2] = () => {
+    const tl = gsap.timeline();
+    tl.to('#act2 .act2-eyebrow', { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0);
+    tl.to('#act2 .act2-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
+    tl.to('#act2 .act2-body', { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: 'power2.out' }, 0.5);
+    tl.from('#act2 .continue-btn', { opacity: 0, duration: 0.8 }, 1.6);
+  };
+
+  anims[3] = () => {
+    const tl = gsap.timeline();
+    tl.to('#act3 .act3-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#act3 .act3-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
+    tl.to('#act3 .memory', { opacity: 1, x: 0, duration: 0.9, stagger: 0.2, ease: 'power2.out' }, 0.5);
+    tl.from('#act3 .continue-btn', { opacity: 0, duration: 0.8 }, 1.8);
+  };
+
+  anims[4] = () => {
+    const tl = gsap.timeline();
+    tl.to('#act4 .act4-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#act4 .act4-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.2);
+    tl.to('#act4 .observation', { opacity: 1, x: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out' }, 0.5);
+    tl.from('#act4 .continue-btn', { opacity: 0, duration: 0.8 }, 1.8);
+  };
+
+  anims[5] = () => {
+    const tl = gsap.timeline();
+    tl.to('#act5 .act5-eyebrow', { opacity: 1, duration: 0.6 }, 0);
+    tl.to('#act5 .tension-line', { opacity: 1, y: 0, duration: 1, stagger: 0.3, ease: 'power2.out' }, 0.3);
+    tl.to('#act5 .tension-gap', { opacity: 1, scaleY: 1, duration: 0.6, stagger: 0.3, ease: 'power2.inOut' }, 0.3);
+    tl.to('#act5 .precipice', { opacity: 1, duration: 1.2, ease: 'power2.out' }, 3.5);
+    tl.from('#act5 .continue-btn', { opacity: 0, duration: 0.8 }, 4.2);
+  };
+
+  anims[6] = () => {
+    if (letterboxed) return;
+    letterboxed = true;
+
+    // Enable letterbox
+    document.getElementById('act6').classList.add('letterboxed');
+
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+    // Everything slows. The whisper.
+    tl.to('#act6 .proposal-whisper', { opacity: 1, duration: 1.8 }, 0);
+    // The rule descends — like breath
+    tl.to('#act6 .proposal-rule', { opacity: 1, scaleY: 1, duration: 1, ease: 'power2.inOut' }, 1.2);
+    // Aura breathes
+    tl.to('#act6 .proposal-aura', { opacity: 1, duration: 1.5 }, 1.5);
+    // HER NAME — this is the crescendo
+    tl.to('#act6 .proposal-name', {
+      opacity: 1, y: 0, scale: 1,
+      duration: 1.4, ease: 'power3.out'
+    }, 2.0);
+    // THE QUESTION — detonation
+    tl.to('#act6 .proposal-question', {
+      opacity: 1, duration: 1.4, ease: 'power2.out'
+    }, 3.5);
+    // Heartbeat
+    tl.to('#act6 .proposal-pulse', { opacity: 1, duration: 0.6 }, 4.5);
+    // The button — the only choice
+    tl.to('#act6 .btn-promise', { opacity: 1, duration: 1, ease: 'power2.out' }, 4.8);
+  };
+
+  anims[7] = () => animateYes();
+
+  function animateAct(num) {
+    if (anims[num]) anims[num]();
+  }
+
+  /* ═══════════════════════════════════════════════
+     YES CELEBRATION
+     A different world. Warm gold and rose.
+     ═══════════════════════════════════════════════ */
+  function sayYes() {
+    const act7 = document.getElementById('act7');
+    act7.style.display = 'block';
+    window.scrollTo(0, 0);
+
+    // Fireflies shift to celebration mode
+    window._setYes(true);
+
+    // Launch petals
+    petals = new PetalSystem(document.getElementById('petals'));
+    petals.start();
+
+    // Animate the YES scene
+    setTimeout(() => animateYes(), 200);
+  }
+
+  function animateYes() {
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+    tl.to('#act7 .yes-eyebrow', { opacity: 1, duration: 1.2 }, 0);
+    tl.to('#act7 .yes-word', { opacity: 1, scale: 1, duration: 1.8, ease: 'elastic.out(1, 0.5)' }, 0.3);
+    tl.to('#act7 .yes-underline', { opacity: 1, scaleX: 1, duration: 0.8, ease: 'power2.inOut' }, 1.4);
+    tl.to('#act7 .yes-line', { opacity: 1, y: 0, duration: 1.6 }, 1.6);
+    tl.to('#act7 .yes-signature', { opacity: 1, duration: 1.2 }, 2.8);
+    tl.to('#act7 .yes-date', { opacity: 1, duration: 1 }, 3.4);
+    tl.to('#act7 .yes-ring-mark', { opacity: 1, duration: 1.5 }, 3);
+  }
+
+  /* ═══════════════════════════════════════════════
+     LOADER
+     ═══════════════════════════════════════════════ */
+  window.addEventListener('load', () => {
+    const tl = gsap.timeline({
+      onComplete() {
+        gsap.to('#loader', {
+          opacity: 0, duration: 0.8, ease: 'power2.inOut',
+          onComplete() {
+            document.getElementById('loader').style.display = 'none';
+            animateAct(1);
+          }
+        });
+      }
+    });
+    tl.to('#loader .loader-word', { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+    tl.to('#loader .loader-line', { scaleX: 1, duration: 2.8, ease: 'power1.inOut' }, 0.4);
+    tl.to('#loader .loader-word', { opacity: 0, duration: 0.5 }, 3.2);
+  });
+
+  /* ═══════════════════════════════════════════════
+     INIT STATES
+     ═══════════════════════════════════════════════ */
+  gsap.set('#act1 .opening-for', { opacity: 0, y: 20 });
+  gsap.set('#act1 .opening-name', { opacity: 0, y: 30 });
+  gsap.set('#act1 .opening-dash', { opacity: 0, scaleY: 0 });
+  gsap.set('#act1 .opening-line', { opacity: 0, y: 15 });
+  gsap.set('#act1 .opening-scroll', { opacity: 0 });
+
+  gsap.set('#act2 .act2-eyebrow', { opacity: 0 });
+  gsap.set('#act2 .act2-title', { opacity: 0, y: 20 });
+  gsap.set('#act2 .act2-body', { opacity: 0, y: 20 });
+
+  gsap.set('#act3 .act3-eyebrow', { opacity: 0 });
+  gsap.set('#act3 .act3-title', { opacity: 0, y: 20 });
+  gsap.set('.memory', { opacity: 0, x: -15 });
+
+  gsap.set('#act4 .act4-eyebrow', { opacity: 0 });
+  gsap.set('#act4 .act4-title', { opacity: 0, y: 20 });
+  gsap.set('#act4 .observation', { opacity: 0, x: -10 });
+
+  gsap.set('#act5 .act5-eyebrow', { opacity: 0 });
+  gsap.set('#act5 .tension-line', { opacity: 0, y: 20 });
+  gsap.set('#act5 .tension-gap', { opacity: 0, scaleY: 0 });
+  gsap.set('#act5 .precipice', { opacity: 0 });
+
+  gsap.set('#act6 .proposal-whisper', { opacity: 0 });
+  gsap.set('#act6 .proposal-rule', { opacity: 0, scaleY: 0 });
+  gsap.set('#act6 .proposal-aura', { opacity: 0 });
+  gsap.set('#act6 .proposal-name', { opacity: 0, y: 20, scale: 0.97 });
+  gsap.set('#act6 .proposal-question', { opacity: 0 });
+  gsap.set('#act6 .proposal-pulse', { opacity: 0 });
+  gsap.set('#act6 .btn-promise', { opacity: 0 });
+
+  gsap.set('#act7 .yes-eyebrow', { opacity: 0 });
+  gsap.set('#act7 .yes-word', { opacity: 0, scale: 0.85 });
+  gsap.set('#act7 .yes-underline', { opacity: 0, scaleX: 0 });
+  gsap.set('#act7 .yes-line', { opacity: 0, y: 20 });
+  gsap.set('#act7 .yes-signature', { opacity: 0 });
+  gsap.set('#act7 .yes-date', { opacity: 0 });
+  gsap.set('#act7 .yes-ring-mark', { opacity: 0 });
+
+  /* ═══════════════════════════════════════════════
+     PROGRESS DOTS
+     ═══════════════════════════════════════════════ */
+  const progressEl = document.getElementById('progress');
+  const dots = progressEl.querySelectorAll('.progress-dot');
+
+  function updateProgress(currentAct) {
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('reached', i < currentAct);
+    });
+  }
+
+  /* ═══════════════════════════════════════════════
+     SCROLL: Show progress after first interaction
+     ═══════════════════════════════════════════════ */
+  let progressVisible = false;
+
+  function showProgress() {
+    if (!progressVisible) {
+      progressVisible = true;
+      progressEl.classList.add('visible');
+    }
+  }
+
+  // Override goToAct to also update progress
+  const _origGoToAct = goToAct;
+
+  /* ═══════════════════════════════════════════════
+     SCROLL TRIGGER: show progress on scroll
+     ═══════════════════════════════════════════════ */
+  let scrollHandled = false;
+  window.addEventListener('scroll', () => {
+    if (!scrollHandled && window.scrollY > 100) {
+      scrollHandled = true;
+      showProgress();
+    }
+  }, { passive: true });
+
+  // Also show on first button tap
+  document.querySelectorAll('.continue-btn').forEach(btn => {
+    btn.addEventListener('click', showProgress, { once: true });
+  });
+
+  /* ═══════════════════════════════════════════════
+     CONTINUE BUTTON STYLES (shared)
+     ═══════════════════════════════════════════════ */
+  const btnStyle = document.createElement('style');
+  btnStyle.textContent = `
+    .continue-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 300;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: rgba(201, 169, 110, 0.45);
+      background: none; border: none; cursor: pointer;
+      padding: 32px 0 8px;
+      transition: color 0.4s ease, opacity 0.4s ease;
+      -webkit-tap-highlight-color: transparent;
+      animation: breathe 3.5s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.75; }
+    }
+    .continue-btn:hover {
+      color: rgba(201, 169, 110, 0.9);
+      animation: none;
+    }
+    .continue-btn .arrow {
+      width: 22px; height: 1px;
+      background: currentColor; position: relative;
+      transition: width 0.4s ease;
+    }
+    .continue-btn .arrow::after {
+      content: ''; position: absolute; right: 0; top: -3px;
+      width: 7px; height: 7px;
+      border-right: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
+      transform: rotate(-45deg);
+    }
+    .continue-btn:hover .arrow { width: 32px; }
+  `;
+  document.head.appendChild(btnStyle);
+
+  </script>
+</body>
+</html>
