@@ -144,78 +144,6 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       NAME REVEAL (OPENING INTERACTION)
-       ═══════════════════════════════════════════════════════ */
-    #nameReveal {
-      position: fixed; inset: 0; z-index: 5000;
-      background: var(--bg-deep);
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.8s ease;
-    }
-    #nameReveal.active { opacity: 1; pointer-events: all; }
-    #nameReveal .nr-text {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(16px, 2.8vw, 22px);
-      font-weight: 300; font-style: italic;
-      color: var(--text-secondary);
-      text-align: center;
-      line-height: 1.7;
-      max-width: 340px;
-      margin-bottom: 40px;
-      opacity: 0;
-    }
-    #nameReveal .nr-name {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(44px, 10vw, 80px);
-      font-weight: 400;
-      background: linear-gradient(135deg, var(--gold), var(--rose));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      opacity: 0;
-      margin-bottom: 12px;
-    }
-    #nameReveal .nr-heart {
-      font-size: 24px; opacity: 0;
-      color: var(--rose-soft);
-      margin-bottom: 48px;
-    }
-    #nameReveal .nr-input-wrap {
-      opacity: 0;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 16px;
-    }
-    #nameReveal .nr-input {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px; font-weight: 300; font-style: italic;
-      color: var(--text-primary);
-      background: rgba(201, 169, 110, 0.05);
-      border: 1px solid rgba(201, 169, 110, 0.15);
-      padding: 14px 28px;
-      text-align: center;
-      outline: none;
-      width: 260px;
-      transition: border-color 0.4s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #nameReveal .nr-input::placeholder { color: var(--text-dim); font-style: italic; }
-    #nameReveal .nr-input:focus { border-color: rgba(201, 169, 110, 0.35); }
-    #nameReveal .nr-btn {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px; font-weight: 300;
-      letter-spacing: 5px; text-transform: uppercase;
-      color: var(--bg-deep);
-      background: linear-gradient(135deg, var(--gold), #d4b896);
-      border: none; cursor: pointer;
-      padding: 14px 40px;
-      transition: all 0.4s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #nameReveal .nr-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 24px rgba(201, 169, 110, 0.25); }
-    #nameReveal .nr-btn:disabled { opacity: 0.3; cursor: default; transform: none; box-shadow: none; }
-
-    /* ═══════════════════════════════════════════════════════
        SHARED UTILITIES
        ═══════════════════════════════════════════════════════ */
     .eyebrow {
@@ -1122,19 +1050,6 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════
-       NAME REVEAL OVERLAY
-       ═══════════════════════════════════════════════ -->
-  <div id="nameReveal">
-    <div class="nr-text">Before we begin&hellip;<br>There is one person<br>this entire story was made for.</div>
-    <div class="nr-name" id="nrDisplay">&nbsp;</div>
-    <div class="nr-heart">&#10084;</div>
-    <div class="nr-input-wrap">
-      <input class="nr-input" id="nrInput" type="text" placeholder="What's your name?" maxlength="30" autocomplete="off" />
-      <button class="nr-btn" id="nrBtn" disabled>Begin</button>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════
        CHAPTER 0: OPENING — HER NAME
        ═══════════════════════════════════════════════ -->
   <section id="ch0" class="act">
@@ -1541,61 +1456,6 @@
     MY_NAME: 'Piku',
     TAGLINE: 'from the one who can\'t stop thinking about you',
   };
-
-  /* ═══════════════════════════════════════════════════════
-     STATE
-     ═══════════════════════════════════════════════════════ */
-  let currentAct = 0;
-  let letterboxed = false;
-  let petals = null;
-  let nameRevealed = false;
-  let musicPlaying = false;
-
-  /* ═══════════════════════════════════════════════════════
-     NAME REVEAL
-     ═══════════════════════════════════════════════════════ */
-  const nrInput = document.getElementById('nrInput');
-  const nrBtn = document.getElementById('nrBtn');
-  const nrDisplay = document.getElementById('nrDisplay');
-  const nameReveal = document.getElementById('nameReveal');
-
-  nrInput.addEventListener('input', () => {
-    nrBtn.disabled = nrInput.value.trim().length < 1;
-  });
-  nrInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !nrBtn.disabled) revealName();
-  });
-  nrBtn.addEventListener('click', revealName);
-
-  function revealName() {
-    const name = nrInput.value.trim();
-    if (!name) return;
-    CONFIG.HER_NAME = name;
-
-    // Update display
-    nrDisplay.innerHTML = name + ' &#10084;';
-    document.getElementById('herName').innerHTML = name.charAt(0).toUpperCase() + name.slice(1).charAt(1) ? '<em>' + name.charAt(1) + '</em>' + name.slice(2) : '<em>' + name + '</em>';
-
-    // Animate out the input, reveal the page
-    const tl = gsap.timeline({
-      onComplete() {
-        nameReveal.classList.remove('active');
-        document.body.style.overflow = '';
-        nameRevealed = true;
-      }
-    });
-    tl.to('#nameReveal .nr-input-wrap', { opacity: 0, y: 10, duration: 0.4 }, 0);
-    tl.to('#nameReveal .nr-input', { opacity: 0, duration: 0.3 }, 0);
-    tl.to('#nameReveal .nr-btn', { opacity: 0, duration: 0.3 }, 0);
-    tl.to('#nameReveal .nr-text', { opacity: 0, duration: 0.5 }, 0);
-    tl.to('#nameReveal .nr-heart', { opacity: 0, duration: 0.4 }, 0);
-    tl.to('#nameReveal .nr-name', { opacity: 0, duration: 0.4 }, 0);
-    tl.to(nameReveal, { opacity: 0, duration: 0.8, ease: 'power2.inOut' }, 0.5);
-    tl.set(nameReveal, { display: 'none' });
-
-    // Trigger chapter 0
-    setTimeout(() => animateCh(0), 300);
-  }
 
   /* ═══════════════════════════════════════════════════════
      FIREFLY SYSTEM
@@ -2060,22 +1920,13 @@
      LOADER + INIT
      ═══════════════════════════════════════════════════════ */
   window.addEventListener('load', () => {
-    // Lock scroll during name reveal
-    document.body.style.overflow = 'hidden';
-
     const tl = gsap.timeline({
       onComplete() {
         gsap.to('#loader', {
           opacity: 0, duration: 0.8, ease: 'power2.inOut',
           onComplete() {
             document.getElementById('loader').style.display = 'none';
-            // Show name reveal
-            nameReveal.classList.add('active');
-            const tl2 = gsap.timeline();
-            tl2.to('#nameReveal .nr-text', { opacity: 1, duration: 1, ease: 'power2.out' }, 0);
-            tl2.to('#nameReveal .nr-input-wrap', { opacity: 1, duration: 0.8 }, 0.8);
-            tl2.to('#nameReveal .nr-input', { opacity: 1, duration: 0.5 }, 1);
-            setTimeout(() => nrInput.focus(), 1200);
+            animateCh(0);
           }
         });
       }
